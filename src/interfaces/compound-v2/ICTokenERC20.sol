@@ -1,33 +1,32 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.8.12;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.8.20;
 
 interface ICTokenERC20 {
-  function mint(uint mintAmount) external virtual returns (uint);
+  function mint(uint256 mintAmount) external returns (uint256);
 
-  function redeem(uint redeemTokens) external virtual returns (uint);
+  function redeem(uint256 redeemTokens) external returns (uint256);
 
-  function redeemUnderlying(uint redeemAmount) external virtual returns (uint);
+  function redeemUnderlying(uint256 redeemAmount) external returns (uint256);
 
-  function borrow(uint borrowAmount) external virtual returns (uint);
+  function borrow(uint256 borrowAmount) external returns (uint256);
 
-  function repayBorrow(uint repayAmount) external virtual returns (uint);
+  function repayBorrow(uint256 repayAmount) external returns (uint256);
 
-  function repayBorrowBehalf(address borrower, uint repayAmount) external virtual returns (uint);
+  function repayBorrowBehalf(address borrower, uint256 repayAmount) external returns (uint256);
 
-  function balanceOf(address owner) external view virtual returns (uint256);
+  function balanceOf(address owner) external view returns (uint256);
 
-  function borrowBalanceStored(address account) external view virtual returns (uint);
+  function borrowBalanceStored(address account) external view returns (uint256);
 
-  function exchangeRateStored() external view virtual returns (uint);
+  function exchangeRateStored() external view returns (uint256);
 
   // function liquidateBorrow(
   //   address borrower,
   //   uint repayAmount,
   //   CTokenInterface cTokenCollateral
-  // ) external virtual returns (uint);
+  // ) external  returns (uint);
 
-  // function sweepToken(EIP20NonStandardInterface token) external virtual;
+  // function sweepToken(EIP20NonStandardInterface token) external ;
 
   function underlying() external view returns (address);
 
