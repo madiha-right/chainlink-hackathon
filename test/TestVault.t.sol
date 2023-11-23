@@ -10,7 +10,7 @@ contract TestVault is TestBase {
     DAI_VAULT = new Vault(IERC20(DAI), 'vault DAI', 'vDAI', address(this));
   }
 
-  function test_revertNowOwner() public {
+  function test_revertNotOwner() public {
     vm.startPrank(address(0x123));
 
     vm.expectRevert(abi.encodeWithSelector(OwnableUnauthorizedAccount.selector, address(0x123)));

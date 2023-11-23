@@ -1,0 +1,90 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.20;
+
+import { IERC4626 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
+
+import { IConnector } from "./interfaces/IConnector.sol";
+import { IVaults } from "./interfaces/IVaults.sol";
+import { IAddressesProvider } from "./interfaces/IAddressesProvider.sol";
+
+import { Errors } from "./lib/Errors.sol";
+
+/**
+ * @title Vaults
+ * @notice Contract to manage and store auxiliary contracts to work with the necessary protocols
+ */
+contract Vaults is IVaults {
+  /* ============ Immutables ============ */
+  // The contract by which all other contact addresses are obtained.
+  IAddressesProvider public immutable ADDRESSES_PROVIDER;
+
+  /* ============ State Variables ============ */
+
+  // Enabled Vaults(asset address => vault address).
+  mapping(address => address) public vaults;
+
+  /* ============ Modifiers ============ */
+
+  /**
+   * @dev Only pool configurator can call functions marked by this modifier.
+   */
+  modifier onlyConfigurator() {
+    if (ADDRESSES_PROVIDER.getConfigurator() != msg.sender) revert Errors.CallerNotConfigurator();
+    _;
+  }
+
+  /* ============ Constructor ============ */
+
+  /**
+   * @dev Constructor.
+   * @param provider The address of the AddressesProvider contract
+   */
+  constructor(address provider) {
+    ADDRESSES_PROVIDER = IAddressesProvider(provider);
+  }
+
+  /* ============ External Functions ============ */
+
+  /// @dev See {IVaults-addVaults}.
+  function addVaults(address[] calldata _assets, address[] calldata _vaults) external onlyConfigurator {
+    if (_assets.length != _vaults.length) revert Errors.InvalidVaultsLength();
+
+    for (uint256 i = 0; i < _vaults.length; i++) {
+      address asset = _assets[i];
+      address vault = _vaults[i];
+
+      if (vaults[asset] != address(0)) revert Errors.VaultAlreadyExist();
+      if (vault == address(0)) revert Errors.InvalidVaultAddress();
+      if (IERC4626(vault).asset() != asset) revert Errors.VaultAssetDoesNotMatch();
+
+      vaults[asset] = vault;
+
+      emit VaultAdded(asset, vault);
+    }
+  }
+
+  /// @dev See {IVaults-removeVaults}.
+  function removeVaults(address[] calldata assets) external onlyConfigurator {
+    for (uint256 i = 0; i < assets.length; i++) {
+      address asset = assets[i];
+      address vault = vaults[asset];
+
+      if (vault == address(0)) revert Errors.VaultDoesNotExist();
+
+      emit VaultRemoved(asset, vault);
+      delete vaults[asset];
+    }
+  }
+
+  /// @dev See {IVaults-hasVault}.
+  function hasVault(address asset) external view returns (bool, address) {
+    bool isOk = true;
+    address vault = vaults[asset];
+
+    if (vault == address(0)) {
+      isOk = false;
+    }
+
+    return (isOk, vault);
+  }
+}

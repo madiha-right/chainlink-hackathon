@@ -11,7 +11,7 @@ interface IConnector {
    * @param amount The amount to be deposited
    * @param onBehalfOf The address that will receive the aTokens representing the deposit
    */
-  function deposit(address asset, uint256 amount, address onBehalfOf) external;
+  function deposit(address asset, uint256 amount, address onBehalfOf) external returns (uint256);
 
   /**
    * @dev Borrow an `amount` of underlying asset from the yield source, receiving in return overlying debt source token.
@@ -31,9 +31,8 @@ interface IConnector {
    * @param to Address that will receive the underlying, same as msg.sender if the user
    *   wants to receive it on his own wallet, or a different address if the beneficiary is a
    *   different wallet
-   * @param yieldSource The address of the yield source. e.g. aave v2 pool, compound v2 cToken
    */
-  function withdraw(address asset, uint256 amount, address to, address yieldSource) external;
+  function withdraw(address asset, uint256 amount, address to) external;
 
   function getYieldBearingAsset(address asset) external view returns (address);
 }

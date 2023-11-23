@@ -85,13 +85,12 @@ interface IZapper {
   function withdrawFromVault(address asset, uint256 amount) external;
 
   function zapDepositAndBorrow(
-    address supplyAsset,
     address collateralAsset,
     uint256 collateralAmount,
-    uint256 collateralConnectorIdx,
+    address collateralConnector,
     address debtAsset,
     uint256 debtAmount,
-    uint256 debtConnectorIdx
+    address debtConnector
   ) external;
 
   /**
@@ -139,4 +138,8 @@ interface IZapper {
    * @dev Returns the list of the active vaults.
    */
   function getVaultsList() external view returns (address[] memory);
+
+  function fee() external view returns (uint256);
+
+  function setFee(uint256 _fee) external;
 }

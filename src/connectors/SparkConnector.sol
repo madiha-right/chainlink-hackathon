@@ -13,7 +13,7 @@ import { IAToken } from "../interfaces/aave-v2/IAToken.sol";
  * @title SparkConnector
  * @dev This contract facilitates interactions with Spark protocol for deposit, withdrawal, and querying underlying assets.
  */
-contract SparkConnector is IConnector {
+abstract contract SparkConnector is IConnector {
   using SafeERC20 for IERC20;
 
   IZapper public immutable Y;

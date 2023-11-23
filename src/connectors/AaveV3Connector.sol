@@ -4,14 +4,14 @@ pragma solidity 0.8.20;
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import { IAaveV2Connector } from "../interfaces/connectors/IAaveV2Connector.sol";
-import { ILendingPool } from "../interfaces/aave-v2/ILendingPool.sol";
-import { IProtocolDataProvider } from "../interfaces/aave-v2/IProtocolDataProvider.sol";
-import { ILendingPoolAddressesProvider } from "../interfaces/aave-v2/ILendingPoolAddressesProvider.sol";
+import { IAaveV3Connector } from "../interfaces/connectors/IAaveV3Connector.sol";
+import { IPool } from "../interfaces/aave-v3/IPool.sol";
+import { IPoolDataProvider } from "../interfaces/aave-v3/IPoolDataProvider.sol";
+import { IPoolAddressesProvider } from "../interfaces/aave-v3/IPoolAddressesProvider.sol";
 
 import { Errors } from "../lib/Errors.sol";
 
-contract AaveV2Connector is IAaveV2Connector {
+contract AaveV3Connector is IAaveV3Connector {
   using SafeERC20 for IERC20;
 
   /* ============ Constants ============ */
@@ -24,60 +24,59 @@ contract AaveV2Connector is IAaveV2Connector {
   /**
    * @dev Connector name
    */
-  string public constant NAME = "AaveV2";
+  string public constant NAME = "AaveV3";
 
   /* ============ Immutables ============ */
 
   /**
    * @dev Aave Lending Pool Provider
    */
-  ILendingPoolAddressesProvider immutable ADDRESSES_PROVIDER;
+  IPoolAddressesProvider immutable ADDRESSES_PROVIDER;
 
   /**
    * @dev Aave Protocol Data Provider
    */
-  IProtocolDataProvider immutable DATA_PROVIDER;
+  IPoolDataProvider immutable DATA_PROVIDER;
 
   /* ============ Constructor ============ */
-  constructor(ILendingPoolAddressesProvider addressesProvider, IProtocolDataProvider dataProvider) {
+  constructor(IPoolAddressesProvider addressesProvider, IPoolDataProvider dataProvider) {
     ADDRESSES_PROVIDER = addressesProvider;
     DATA_PROVIDER = dataProvider;
   }
 
   /* ============ External Functions ============ */
 
-  /// @dev See {IAaveV2Connector-deposit}.
+  /// @dev See {IAaveV3Connector-deposit}.
   function deposit(address token, uint256 amount) external {
-    ILendingPool aave = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
+    IPool aave = IPool(ADDRESSES_PROVIDER.getPool());
 
     amount = amount == type(uint256).max ? IERC20(token).balanceOf(address(this)) : amount;
 
     IERC20(token).forceApprove(address(aave), amount);
+    aave.supply(token, amount, address(this), REFERRAL_CODE);
 
-    aave.deposit(token, amount, address(this), REFERRAL_CODE);
-
-    if (!_getIsCollateral(token)) {
+    if (!_getisCollateral(token)) {
       aave.setUserUseReserveAsCollateral(token, true);
     }
   }
 
-  /// @dev See {IAaveV2Connector-withdraw}.
+  /// @dev See {IAaveV3Connector-withdraw}.
   function withdraw(address token, uint256 amount) external {
-    ILendingPool aave = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
+    IPool aave = IPool(ADDRESSES_PROVIDER.getPool());
 
     aave.withdraw(token, amount, address(this));
   }
 
-  /// @dev See {IAaveV2Connector-borrow}.
+  /// @dev See {IAaveV3Connector-borrow}.
   function borrow(address token, uint256 rateMode, uint256 amount) external {
-    ILendingPool aave = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
+    IPool aave = IPool(ADDRESSES_PROVIDER.getPool());
 
     aave.borrow(token, amount, rateMode, REFERRAL_CODE, address(this));
   }
 
-  /// @dev See {IAaveV2Connector-payback}.
+  /// @dev See {IAaveV3Connector-payback}.
   function payback(address token, uint256 amount, uint256 rateMode) external {
-    ILendingPool aave = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
+    IPool aave = IPool(ADDRESSES_PROVIDER.getPool());
 
     uint256 debtAmount = getPaybackBalance(token, rateMode, address(this));
 
@@ -90,13 +89,13 @@ contract AaveV2Connector is IAaveV2Connector {
 
   /* ============ Public Functions ============ */
 
-  /// @dev See {IAaveV2Connector-getPaybackBalance}.
+  /// @dev See {IAaveV3Connector-getPaybackBalance}.
   function getPaybackBalance(address token, uint256 rateMode, address user) public view returns (uint256) {
     (, uint256 stableDebt, uint256 variableDebt,,,,,,) = DATA_PROVIDER.getUserReserveData(token, user);
     return rateMode == 1 ? stableDebt : variableDebt;
   }
 
-  /// @dev See {IAaveV2Connector-getCollateralBalance}.
+  /// @dev See {IAaveV3Connector-getCollateralBalance}.
   function getCollateralBalance(address token, address user) public view returns (uint256 balance) {
     (balance,,,,,,,,) = DATA_PROVIDER.getUserReserveData(token, user);
   }
@@ -107,7 +106,7 @@ contract AaveV2Connector is IAaveV2Connector {
    * @dev Checks if collateral is enabled for an asset
    * @param token token address of the asset.(For ETH: 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)
    */
-  function _getIsCollateral(address token) internal view returns (bool IsCollateral) {
-    (,,,,,,,, IsCollateral) = DATA_PROVIDER.getUserReserveData(token, address(this));
+  function _getisCollateral(address token) internal view returns (bool isCollateral) {
+    (,,,,,,,, isCollateral) = DATA_PROVIDER.getUserReserveData(token, address(this));
   }
 }

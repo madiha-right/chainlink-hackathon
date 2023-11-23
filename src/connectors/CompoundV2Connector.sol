@@ -13,7 +13,7 @@ import { IComptroller } from "../interfaces/compound-v2/IComptroller.sol";
  * @title CompoundV2Connector
  * @dev This contract facilitates interactions with Compound V2 protocol for deposit, withdrawal, and querying underlying assets.
  */
-contract CompoundV2Connector is IConnector {
+abstract contract CompoundV2Connector is IConnector {
   using SafeERC20 for IERC20;
 
   IZapper public immutable Y;

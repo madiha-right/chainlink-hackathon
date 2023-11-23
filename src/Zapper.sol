@@ -12,6 +12,10 @@ import { IConnector } from "./interfaces/IConnector.sol";
 contract Zapper is IZapper, Ownable {
   using SafeERC20 for IERC20;
 
+  // the number of yield sources supported
+  uint256 private _connectorsCount;
+  uint256 private _vaultsCount;
+
   // connector address => connector data
   mapping(address => ConnectorData) private _connectors;
   // asset => vault
@@ -22,9 +26,8 @@ contract Zapper is IZapper, Ownable {
   // the list of the available vaults
   mapping(uint256 => address) private _vaultsList;
 
-  // the number of yield sources supported
-  uint256 private _connectorsCount;
-  uint256 private _vaultsCount;
+  // Map of users address and their account (userAddress => userAccount)
+  mapping(address => address) public accounts;
 
   constructor(address initialOwner) Ownable(initialOwner) { }
 
@@ -92,7 +95,6 @@ contract Zapper is IZapper, Ownable {
   /////////////// SETTERS /////////////////
   /////////////////////////////////////////
 
-  /// @inheritdoc IZapper
   function initConnector(address connector) external onlyOwner {
     ConnectorData storage connectorData = _connectors[connector];
     uint256 connectorsCount = _connectorsCount;
@@ -109,7 +111,6 @@ contract Zapper is IZapper, Ownable {
     emit ConnectorInitialized(connector);
   }
 
-  /// @inheritdoc IZapper
   function initVault(address vault) external onlyOwner {
     address asset = IERC4626(vault).asset();
     VaultData storage vaultData = _vaults[asset];
@@ -128,26 +129,22 @@ contract Zapper is IZapper, Ownable {
     emit VaultInitialized(address(vault), asset);
   }
 
-  /// @inheritdoc IZapper
   function activateConnector(address connector) external onlyOwner {
     _connectors[connector].isActive = true;
     emit ConnectorActivated(connector);
   }
 
-  /// @inheritdoc IZapper
   function deactivateConnector(address connector) external onlyOwner {
     _connectors[connector].isActive = false;
     emit ConnectorDeactivated(connector);
   }
 
-  /// @inheritdoc IZapper
   function activateVault(address vault) external onlyOwner {
     address asset = IERC4626(vault).asset();
     _vaults[asset].isActive = true;
     emit VaultActivated(vault, asset);
   }
 
-  /// @inheritdoc IZapper
   function deactivateVault(address vault) external onlyOwner {
     address asset = IERC4626(vault).asset();
     _vaults[asset].isActive = false;
@@ -158,7 +155,6 @@ contract Zapper is IZapper, Ownable {
   /////////////// GETTERS /////////////////
   /////////////////////////////////////////
 
-  /// @inheritdoc IZapper
   function getConnectorsList() external view returns (address[] memory) {
     uint256 connectorsListCount = _connectorsCount;
     uint256 droppedConnectorsCount = 0;
@@ -180,7 +176,6 @@ contract Zapper is IZapper, Ownable {
     return connectorsList;
   }
 
-  /// @inheritdoc IZapper
   function getVaultsList() external view returns (address[] memory) {
     uint256 vaultsListCount = _vaultsCount;
     uint256 droppedVaultsCount = 0;
