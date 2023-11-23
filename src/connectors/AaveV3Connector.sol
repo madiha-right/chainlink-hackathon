@@ -5,9 +5,9 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import { IAaveV3Connector } from "../interfaces/connectors/IAaveV3Connector.sol";
-import { IPool } from "../interfaces/aave-v3/IPool.sol";
-import { IPoolDataProvider } from "../interfaces/aave-v3/IPoolDataProvider.sol";
-import { IPoolAddressesProvider } from "../interfaces/aave-v3/IPoolAddressesProvider.sol";
+import { IPool } from "../interfaces/external/aave-v3/IPool.sol";
+import { IPoolDataProvider } from "../interfaces/external/aave-v3/IPoolDataProvider.sol";
+import { IPoolAddressesProvider } from "../interfaces/external/aave-v3/IPoolAddressesProvider.sol";
 
 import { Errors } from "../lib/Errors.sol";
 

@@ -83,7 +83,6 @@ contract Account is Initializable, IAccount {
     ADDRESSES_PROVIDER.connectorCall(_targetNames[0], abi.encodePacked(_datas[0])); // supply delegated assets
     ADDRESSES_PROVIDER.connectorCall(_targetNames[1], abi.encodePacked(_datas[1])); // deposit collateral
     ADDRESSES_PROVIDER.connectorCall(_targetNames[2], abi.encodePacked(_datas[2])); // borrow debt
-      // TODO: send debt amount to the msg.sender(EOA)
   }
 
   function closePosition(bytes32 key, bytes calldata data) external onlyRouter {
