@@ -30,9 +30,9 @@ contract ACLManager is AccessControl, IACLManager {
    * @dev The ACL admin should be initialized at the addressesProvider beforehand
    * @param provider The address of the AddressesProvider
    */
-  constructor(address provider) {
-    ADDRESSES_PROVIDER = IAddressesProvider(provider);
-    address aclAdmin = IAddressesProvider(provider).getACLAdmin();
+  constructor(IAddressesProvider provider) {
+    ADDRESSES_PROVIDER = provider;
+    address aclAdmin = provider.getACLAdmin();
 
     if (aclAdmin == address(0)) revert Errors.ACLAdminCannotBeZero();
     _grantRole(DEFAULT_ADMIN_ROLE, aclAdmin);

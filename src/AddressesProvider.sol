@@ -37,16 +37,14 @@ contract AddressesProvider is Ownable, IAddressesProvider {
    * @dev Constructor.
    * @param newOwner The owner address of this contract.
    */
-  constructor(address newOwner) {
-    transferOwnership(newOwner);
-  }
+  constructor(address newOwner) Ownable(newOwner) { }
 
   /* ============ External Functions ============ */
 
   /// @dev See {IAddressesProvider-setAddress}.
   function setAddress(bytes32 id, address newAddress) external override onlyOwner {
     address oldAddress = _addresses[id];
-    _addresses[id] = _newAddress;
+    _addresses[id] = newAddress;
     emit AddressSet(id, oldAddress, newAddress);
   }
 

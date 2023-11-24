@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import { VersionedInitializable } from "@openzeppelin/contracts/proxy/upgradeability/VersionedInitializable.sol";
+import { VersionedInitializable } from "../lib/upgradeability/VersionedInitializable.sol";
 
 import { IRouter } from "./interfaces/IRouter.sol";
 import { IConnectors } from "./interfaces/IConnectors.sol";
@@ -81,12 +81,12 @@ contract Configurator is VersionedInitializable, IConfigurator {
   }
 
   /// @dev See {IConfigurator-addVaults}.
-  function addVaults(address[] calldata assets, address[] calldata addresses) external onlyConnectorAdmin {
+  function addVaults(address[] calldata assets, address[] calldata addresses) external onlyVaultAdmin {
     _vaults.addVaults(assets, addresses);
   }
 
   /// @dev See {IConfigurator-removeVaults}.
-  function removeVaults(address[] calldata assets) external onlyConnectorAdmin {
+  function removeVaults(address[] calldata assets) external onlyVaultAdmin {
     _vaults.removeVaults(assets);
   }
 

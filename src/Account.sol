@@ -21,7 +21,7 @@ import { IAddressesProvider } from "./interfaces/IAddressesProvider.sol";
  * @notice Contract used as implimentation user account.
  * @dev Interaction with contracts is carried out by means of calling the proxy contract.
  */
-contract Account is Initializable, IAccount {
+contract AccountV1 is Initializable, IAccount {
   using SafeERC20 for IERC20;
   using ConnectorsCall for IAddressesProvider;
   using Address for address;

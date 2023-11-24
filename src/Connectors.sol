@@ -69,7 +69,7 @@ contract Connectors is IConnectors {
       address connector = connectors[i];
       address oldConnector = _connectors[name];
 
-      if (_connectors[name] != address(0)) revert Errors.ConnectorAlreadyExist();
+      if (_connectors[name] == address(0)) revert Errors.ConnectorDoesNotExist();
       if (connector == address(0)) revert Errors.InvalidConnectorAddress();
 
       _connectors[name] = connector;
