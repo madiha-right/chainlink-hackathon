@@ -80,19 +80,26 @@ contract AccountV1 is Initializable, IAccount {
 
     (string[] memory _targetNames, bytes[] memory _datas) = abi.decode(data, (string[], bytes[]));
 
+    if (_compare(position.delegationTargetName, _targetNames[0])) revert Errors.InvalidDelegateTargetName();
+
     ADDRESSES_PROVIDER.connectorCall(_targetNames[0], abi.encodePacked(_datas[0])); // supply delegated assets
     ADDRESSES_PROVIDER.connectorCall(_targetNames[1], abi.encodePacked(_datas[1])); // deposit collateral
     ADDRESSES_PROVIDER.connectorCall(_targetNames[2], abi.encodePacked(_datas[2])); // borrow debt
   }
 
   function closePosition(bytes32 key, bytes calldata data) external onlyRouter {
-    (address account,,,,) = _getRouter().positions(key);
+    (address account,,,,, string memory delegationTargetName) = _getRouter().positions(key);
     if (account != _owner) revert Errors.CallerNotPositionOwner();
 
     (string[] memory _targetNames, bytes[] memory _datas) = abi.decode(data, (string[], bytes[]));
 
-    ADDRESSES_PROVIDER.connectorCall(_targetNames[0], _datas[0]);
-    ADDRESSES_PROVIDER.connectorCall(_targetNames[1], _datas[1]);
+    if (_compare(delegationTargetName, _targetNames[2])) revert Errors.InvalidDelegateTargetName();
+    // (, uint256 decodedAmount) = abi.decode(data[4:], (address, uint256));
+    // NOTE: validate the 'to' parameter is set to the router
+
+    ADDRESSES_PROVIDER.connectorCall(_targetNames[0], _datas[0]); // repay debt
+    ADDRESSES_PROVIDER.connectorCall(_targetNames[1], _datas[1]); // withdraw collateral with interest and send it to router
+    ADDRESSES_PROVIDER.connectorCall(_targetNames[2], _datas[2]); // redeem delegated assets
   }
 
   function claimTokens(address token, uint256 amount) external override onlyOwner {
@@ -136,5 +143,12 @@ contract AccountV1 is Initializable, IAccount {
    */
   function _getRouter() private view returns (IRouter) {
     return IRouter(ADDRESSES_PROVIDER.getRouter());
+  }
+
+  function _compare(string memory str1, string memory str2) public pure returns (bool) {
+    if (bytes(str1).length != bytes(str2).length) {
+      return false;
+    }
+    return keccak256(abi.encodePacked(str1)) == keccak256(abi.encodePacked(str2));
   }
 }

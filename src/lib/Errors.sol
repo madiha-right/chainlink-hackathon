@@ -21,6 +21,7 @@ library Errors {
   error InvalidConnectorsLength(); // The length of the connector array and their names are different
   error ConnectorAlreadyExist(); // A connector with this name already exists
   error ConnectorDoesNotExist(); // A connector with this name does not exist
+  error InvalidDelegateTargetName(); // The name of the delegate target does not match
 
   error NotVault(); // There is no vault with this name
   error InvalidVaultAddress(); // The address of the vault is invalid

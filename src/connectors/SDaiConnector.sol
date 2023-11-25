@@ -36,4 +36,12 @@ contract SDAIConnector {
   function redeem(uint256 shares) external {
     IERC4626(SDAI).redeem(shares, address(this), address(this));
   }
+
+  function getDepositBalance(address account) external view returns (uint256) {
+    return IERC4626(SDAI).convertToAssets(IERC4626(SDAI).balanceOf(account));
+  }
+
+  function getShares(address account) external view returns (uint256) {
+    return IERC4626(SDAI).balanceOf(account);
+  }
 }

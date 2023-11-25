@@ -2,14 +2,12 @@
 pragma solidity 0.8.20;
 
 import { Test } from "forge-std/Test.sol";
-import { VersionedInitializable } from "../../lib/upgradeability/VersionedInitializable.sol";
+import { VersionedInitializable } from "@upgradeability/VersionedInitializable.sol";
 
-import { IAddressesProvider } from "../../src/interfaces/IAddressesProvider.sol";
-
-import { Errors } from "../../src/lib/Errors.sol";
-
-import { ACLManager } from "../../src/ACLManager.sol";
-import { AddressesProvider } from "../../src/AddressesProvider.sol";
+import { IAddressesProvider } from "contracts/interfaces/IAddressesProvider.sol";
+import { Errors } from "contracts/lib/Errors.sol";
+import { ACLManager } from "contracts/ACLManager.sol";
+import { AddressesProvider } from "contracts/AddressesProvider.sol";
 
 contract DummyContract is VersionedInitializable {
   uint256 public count = 1;

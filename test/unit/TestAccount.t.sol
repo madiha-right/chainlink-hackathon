@@ -3,12 +3,11 @@ pragma solidity 0.8.20;
 
 import { Test } from "forge-std/Test.sol";
 
-import { IAddressesProvider } from "../../src/interfaces/IAddressesProvider.sol";
+import { IAddressesProvider } from "contracts/interfaces/IAddressesProvider.sol";
+import { Errors } from "contracts/lib/Errors.sol";
+import { AddressesProvider } from "contracts/AddressesProvider.sol";
+import { AccountV1 } from "contracts/Account.sol";
 
-import { Errors } from "../../src/lib/Errors.sol";
-
-import { AddressesProvider } from "../../src/AddressesProvider.sol";
-import { AccountV1 } from "../../src/Account.sol";
 import { ERC20Mock } from "../mocks/ERC20Mock.sol";
 
 contract TestAccount is Test {

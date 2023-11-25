@@ -32,9 +32,8 @@ contract CompoundV2Connector is ICompoundV2Connector {
 
     _enterMarket(address(cToken));
 
-    IERC20 tokenC = IERC20(token);
-    amount = amount == type(uint256).max ? tokenC.balanceOf(address(this)) : amount;
-    tokenC.forceApprove(address(cToken), amount);
+    amount = amount == type(uint256).max ? IERC20(token).balanceOf(address(this)) : amount;
+    IERC20(token).forceApprove(address(cToken), amount);
 
     CErc20Interface(cToken).mint(amount);
   }
@@ -61,12 +60,12 @@ contract CompoundV2Connector is ICompoundV2Connector {
 
     uint256 debtAmount = cToken.borrowBalanceCurrent(address(this));
 
-    IERC20 tokenC = IERC20(token);
-
     if (amount < debtAmount) revert Errors.InvalidAmountAction();
-    if (amount < tokenC.balanceOf(address(this))) revert Errors.InvalidAmountAction();
+    if (amount != type(uint256).max && amount > IERC20(token).balanceOf(address(this))) {
+      revert Errors.InvalidAmountAction();
+    }
 
-    tokenC.forceApprove(address(cToken), debtAmount);
+    IERC20(token).forceApprove(address(cToken), debtAmount);
     cToken.repayBorrow(debtAmount);
   }
 
