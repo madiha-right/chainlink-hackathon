@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import { Test } from "forge-std/Test.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-import { AaveV3Connector } from "contracts/connectors/AaveV3Connector.sol";
+import { AaveV3Connector } from "contracts/connectors/mainnet/AaveV3Connector.sol";
 import { DataTypes } from "contracts/lib/DataTypes.sol";
 import { IPool } from "contracts/interfaces/external/aave-v3/IPool.sol";
 import { IPoolDataProvider } from "contracts/interfaces/external/aave-v3/IPoolDataProvider.sol";
@@ -27,7 +27,7 @@ contract LendingHelper is Tokens {
     uint256 forkId = vm.createFork(url);
     vm.selectFork(forkId);
 
-    aaveV3Connector = new AaveV3Connector(aaveProvider, aaveDataProvider);
+    aaveV3Connector = new AaveV3Connector();
   }
 
   function _getPaybackData(uint256 amount, address token) internal view returns (bytes memory) {

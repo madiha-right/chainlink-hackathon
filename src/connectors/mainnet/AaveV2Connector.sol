@@ -4,12 +4,12 @@ pragma solidity 0.8.20;
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import { IAaveV2Connector } from "../interfaces/connectors/IAaveV2Connector.sol";
-import { ILendingPool } from "../interfaces/external/aave-v2/ILendingPool.sol";
-import { IProtocolDataProvider } from "../interfaces/external/aave-v2/IProtocolDataProvider.sol";
-import { ILendingPoolAddressesProvider } from "../interfaces/external/aave-v2/ILendingPoolAddressesProvider.sol";
+import { IAaveV2Connector } from "../..//interfaces/connectors/IAaveV2Connector.sol";
+import { ILendingPool } from "../../interfaces/external/aave-v2/ILendingPool.sol";
+import { IProtocolDataProvider } from "../../interfaces/external/aave-v2/IProtocolDataProvider.sol";
+import { ILendingPoolAddressesProvider } from "../../interfaces/external/aave-v2/ILendingPoolAddressesProvider.sol";
 
-import { Errors } from "../lib/Errors.sol";
+import { Errors } from "../../lib/Errors.sol";
 
 contract AaveV2Connector is IAaveV2Connector {
   using SafeERC20 for IERC20;
@@ -31,18 +31,13 @@ contract AaveV2Connector is IAaveV2Connector {
   /**
    * @dev Aave Lending Pool Provider
    */
-  ILendingPoolAddressesProvider immutable ADDRESSES_PROVIDER;
+  ILendingPoolAddressesProvider constant ADDRESSES_PROVIDER =
+    ILendingPoolAddressesProvider(0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5);
 
   /**
    * @dev Aave Protocol Data Provider
    */
-  IProtocolDataProvider immutable DATA_PROVIDER;
-
-  /* ============ Constructor ============ */
-  constructor(ILendingPoolAddressesProvider addressesProvider, IProtocolDataProvider dataProvider) {
-    ADDRESSES_PROVIDER = addressesProvider;
-    DATA_PROVIDER = dataProvider;
-  }
+  IProtocolDataProvider constant DATA_PROVIDER = IProtocolDataProvider(0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d);
 
   /* ============ External Functions ============ */
 

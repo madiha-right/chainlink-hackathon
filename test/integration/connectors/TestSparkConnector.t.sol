@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-import { SparkConnector } from "contracts/connectors/SparkConnector.sol";
+import { SparkConnector } from "contracts/connectors/mainnet/SparkConnector.sol";
 import { DataTypes } from "contracts/lib/DataTypes.sol";
 import { IPool } from "contracts/interfaces/external/aave-v3/IPool.sol";
 import { IPoolDataProvider } from "contracts/interfaces/external/aave-v3/IPoolDataProvider.sol";
@@ -28,7 +28,7 @@ contract LendingHelper is Tokens {
     uint256 forkId = vm.createFork(url);
     vm.selectFork(forkId);
 
-    sparkConnector = new SparkConnector(sparkProvider, sparkDataProvider);
+    sparkConnector = new SparkConnector();
   }
 
   function _getPaybackData(uint256 amount, address token) internal view returns (bytes memory) {

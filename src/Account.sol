@@ -88,18 +88,19 @@ contract AccountV1 is Initializable, IAccount {
   }
 
   function closePosition(bytes32 key, bytes calldata data) external onlyRouter {
-    (address account,,,,, string memory delegationTargetName) = _getRouter().positions(key);
+    (address account,, address collateralAsset, uint256 collateralAmount,, string memory delegationTargetName) =
+      _getRouter().positions(key);
     if (account != _owner) revert Errors.CallerNotPositionOwner();
 
     (string[] memory _targetNames, bytes[] memory _datas) = abi.decode(data, (string[], bytes[]));
 
     if (_compare(delegationTargetName, _targetNames[2])) revert Errors.InvalidDelegateTargetName();
-    // (, uint256 decodedAmount) = abi.decode(data[4:], (address, uint256));
-    // NOTE: validate the 'to' parameter is set to the router
 
     ADDRESSES_PROVIDER.connectorCall(_targetNames[0], _datas[0]); // repay debt
     ADDRESSES_PROVIDER.connectorCall(_targetNames[1], _datas[1]); // withdraw collateral with interest and send it to router
     ADDRESSES_PROVIDER.connectorCall(_targetNames[2], _datas[2]); // redeem delegated assets
+    // only approve collateral amount to router(interest is not included)
+    IERC20(collateralAsset).forceApprove(msg.sender, collateralAmount);
   }
 
   function claimTokens(address token, uint256 amount) external override onlyOwner {

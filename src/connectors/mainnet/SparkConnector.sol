@@ -4,12 +4,12 @@ pragma solidity 0.8.20;
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import { IAaveV3Connector } from "../interfaces/connectors/IAaveV3Connector.sol";
-import { IPool } from "../interfaces/external/aave-v3/IPool.sol";
-import { IPoolDataProvider } from "../interfaces/external/aave-v3/IPoolDataProvider.sol";
-import { IPoolAddressesProvider } from "../interfaces/external/aave-v3/IPoolAddressesProvider.sol";
+import { IAaveV3Connector } from "../../interfaces/connectors/IAaveV3Connector.sol";
+import { IPool } from "../../interfaces/external/aave-v3/IPool.sol";
+import { IPoolDataProvider } from "../../interfaces/external/aave-v3/IPoolDataProvider.sol";
+import { IPoolAddressesProvider } from "../../interfaces/external/aave-v3/IPoolAddressesProvider.sol";
 
-import { Errors } from "../lib/Errors.sol";
+import { Errors } from "../../lib/Errors.sol";
 
 contract SparkConnector is IAaveV3Connector {
   using SafeERC20 for IERC20;
@@ -31,18 +31,13 @@ contract SparkConnector is IAaveV3Connector {
   /**
    * @dev spark Lending Pool Provider
    */
-  IPoolAddressesProvider immutable ADDRESSES_PROVIDER;
+  IPoolAddressesProvider constant ADDRESSES_PROVIDER =
+    IPoolAddressesProvider(0x02C3eA4e34C0cBd694D2adFa2c690EECbC1793eE);
 
   /**
    * @dev spark Protocol Data Provider
    */
-  IPoolDataProvider immutable DATA_PROVIDER;
-
-  /* ============ Constructor ============ */
-  constructor(IPoolAddressesProvider addressesProvider, IPoolDataProvider dataProvider) {
-    ADDRESSES_PROVIDER = addressesProvider;
-    DATA_PROVIDER = dataProvider;
-  }
+  IPoolDataProvider constant DATA_PROVIDER = IPoolDataProvider(0xFc21d6d146E6086B8359705C8b28512a983db0cb);
 
   /* ============ External Functions ============ */
 

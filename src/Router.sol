@@ -99,16 +99,7 @@ contract Router is VersionedInitializable, IRouter {
     IERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
     balances[asset][msg.sender] += amount;
 
-    address vaults = ADDRESSES_PROVIDER.getVaults();
-    address vault = IVaults(vaults).vaults(asset);
-
-    if (vault == address(0)) revert Errors.VaultDoesNotExist();
-
-    if (IERC20(asset).allowance(address(this), vault) < amount) {
-      IERC20(asset).forceApprove(vault, type(uint256).max);
-    }
-
-    IERC4626(vault).deposit(amount, address(this));
+    _depositToVault(asset, amount);
   }
 
   /// @dev See {IRouter-undelegate}.
@@ -145,6 +136,9 @@ contract Router is VersionedInitializable, IRouter {
     if (account == address(0)) revert Errors.AccountDoesNotExist();
 
     IAccount(account).closePosition(key, data);
+
+    IERC20(position.collateralAsset).safeTransferFrom(account, address(this), position.collateralAmount);
+    _depositToVault(position.collateralAsset, position.collateralAmount);
 
     emit ClosePosition(key, account, position);
     delete positions[key];
@@ -212,6 +206,22 @@ contract Router is VersionedInitializable, IRouter {
 
     // Get the position on the key because, update it in the process of creating
     emit OpenPosition(key, account, index, positions[key]);
+  }
+
+  /**
+   * @dev Deposit asset to corresposding vault.
+   */
+  function _depositToVault(address asset, uint256 amount) private {
+    address vaults = ADDRESSES_PROVIDER.getVaults();
+    address vault = IVaults(vaults).vaults(asset);
+
+    if (vault == address(0)) revert Errors.VaultDoesNotExist();
+
+    if (IERC20(asset).allowance(address(this), vault) < amount) {
+      IERC20(asset).forceApprove(vault, type(uint256).max);
+    }
+
+    IERC4626(vault).deposit(amount, address(this));
   }
 
   /**

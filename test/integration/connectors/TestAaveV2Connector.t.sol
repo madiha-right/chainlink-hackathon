@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import { Connectors } from "contracts/Connectors.sol";
-import { AaveV2Connector } from "contracts/connectors/AaveV2Connector.sol";
+import { AaveV2Connector } from "contracts/connectors/mainnet/AaveV2Connector.sol";
 import { DataTypes } from "contracts/lib/DataTypes.sol";
 import { ILendingPool } from "contracts/interfaces/external/aave-v2/ILendingPool.sol";
 import { IProtocolDataProvider } from "contracts/interfaces/external/aave-v2/IProtocolDataProvider.sol";
@@ -28,7 +28,7 @@ contract LendingHelper is Tokens {
     uint256 forkId = vm.createFork(url);
     vm.selectFork(forkId);
 
-    aaveV2Connector = new AaveV2Connector(aaveProvider, aaveDataProvider);
+    aaveV2Connector = new AaveV2Connector();
   }
 
   function _getCollateralAmt(address token, address recipient) internal view returns (uint256 collateralAmount) {

@@ -5,7 +5,7 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { ERC4626 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import { SDAIConnector } from "contracts/connectors/SDAIConnector.sol";
+import { SDAIConnector } from "contracts/connectors/mainnet/SDAIConnector.sol";
 import { DataTypes } from "contracts/lib/DataTypes.sol";
 
 import { Tokens } from "../../utils/tokens.sol";

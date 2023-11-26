@@ -6,7 +6,7 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import { DataTypes } from "contracts/lib/DataTypes.sol";
 import { Errors } from "contracts/lib/Errors.sol";
-import { CompoundV2Connector } from "contracts/connectors/CompoundV2Connector.sol";
+import { CompoundV2Connector } from "contracts/connectors/mainnet/CompoundV2Connector.sol";
 import { CTokenInterface } from "contracts/interfaces/external/compound-v2/CTokenInterfaces.sol";
 import { ComptrollerInterface } from "contracts/interfaces/external/compound-v2/ComptrollerInterface.sol";
 
