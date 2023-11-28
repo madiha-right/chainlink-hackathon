@@ -10,6 +10,7 @@ import { Router } from "contracts/Router.sol";
 import { Configurator } from "contracts/Configurator.sol";
 import { ACLManager } from "contracts/ACLManager.sol";
 import { Connectors } from "contracts/Connectors.sol";
+import { Vaults } from "contracts/Vaults.sol";
 import { AddressesProvider } from "contracts/AddressesProvider.sol";
 
 import { Tokens } from "../tokens.sol";
@@ -22,10 +23,11 @@ contract DeployCoreContracts is Tokens {
 
   address public ACL_ADMIN = makeAddr("ACL_ADMIN");
   address public CONNECTOR_ADMIN = makeAddr("CONNECTOR_ADMIN");
+  address public VAULT_ADMIN = makeAddr("VAULT_ADMIN");
   address public ROUTER_ADMIN = makeAddr("ROUTER_ADMIN");
   address public TREASURY = makeAddr("TREASURY");
 
-  function deployContracts(string[] memory _names, address[] memory _connectors) public {
+  function deployContracts(string[] memory _names, address[] memory _connectors, address[] memory _vaults) public {
     vm.startPrank(owner);
     AddressesProvider addressesProvider = new AddressesProvider(owner);
     addressesProvider.setAddress(bytes32("ACL_ADMIN"), ACL_ADMIN);
@@ -33,15 +35,18 @@ contract DeployCoreContracts is Tokens {
 
     ACLManager aclManager = new ACLManager(IAddressesProvider(address(addressesProvider)));
     Connectors connectors = new Connectors(address(addressesProvider));
+    Vaults vaults = new Vaults(address(addressesProvider));
 
     vm.startPrank(ACL_ADMIN);
     aclManager.addConnectorAdmin(CONNECTOR_ADMIN);
+    aclManager.addVaultAdmin(VAULT_ADMIN);
     aclManager.addRouterAdmin(ROUTER_ADMIN);
     vm.stopPrank();
 
     vm.startPrank(owner);
     addressesProvider.setAddress(bytes32("ACL_MANAGER"), address(aclManager));
     addressesProvider.setAddress(bytes32("CONNECTORS"), address(connectors));
+    addressesProvider.setAddress(bytes32("VAULTS"), address(vaults));
 
     Configurator configurator = new Configurator();
 
@@ -62,6 +67,9 @@ contract DeployCoreContracts is Tokens {
 
     vm.prank(CONNECTOR_ADMIN);
     configurator.addConnectors(_names, _connectors);
+
+    vm.prank(VAULT_ADMIN);
+    configurator.addVaults(_vaults);
 
     vm.prank(ROUTER_ADMIN);
     configurator.setFee(3);

@@ -64,7 +64,7 @@ contract AaveV2Connector is IAaveV2Connector {
   }
 
   /// @dev See {IAaveV2Connector-borrow}.
-  function borrow(address token, uint256 rateMode, uint256 amount) external {
+  function borrow(address token, uint256 amount, uint256 rateMode) external {
     ILendingPool aave = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
 
     aave.borrow(token, amount, rateMode, REFERRAL_CODE, address(this));
@@ -74,19 +74,21 @@ contract AaveV2Connector is IAaveV2Connector {
   function payback(address token, uint256 amount, uint256 rateMode) external {
     ILendingPool aave = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
 
-    uint256 debtAmount = getPaybackBalance(token, rateMode, address(this));
+    if (amount == type(uint256).max) {
+      uint256 balance = IERC20(token).balanceOf(address(this));
+      uint256 amountDebt = getPaybackBalance(token, address(this), rateMode);
+      amount = balance <= amountDebt ? balance : amountDebt;
+    }
 
-    if (amount < debtAmount) revert Errors.InvalidAmountAction();
+    IERC20(token).forceApprove(address(aave), amount);
 
-    IERC20(token).forceApprove(address(aave), debtAmount);
-
-    aave.repay(token, debtAmount, rateMode, address(this));
+    aave.repay(token, amount, rateMode, address(this));
   }
 
   /* ============ Public Functions ============ */
 
   /// @dev See {IAaveV2Connector-getPaybackBalance}.
-  function getPaybackBalance(address token, uint256 rateMode, address user) public view returns (uint256) {
+  function getPaybackBalance(address token, address user, uint256 rateMode) public view returns (uint256) {
     (, uint256 stableDebt, uint256 variableDebt,,,,,,) = DATA_PROVIDER.getUserReserveData(token, user);
     return rateMode == 1 ? stableDebt : variableDebt;
   }

@@ -37,11 +37,11 @@ contract LendingHelper is Tokens {
     borrowAmount = compoundV2Connector.borrowBalanceOf(token, recipient);
   }
 
-  function _getPaybackData(uint256 amount, address token) internal view returns (bytes memory) {
+  function _getPaybackData(address token, uint256 amount) internal view returns (bytes memory) {
     return abi.encodeWithSelector(compoundV2Connector.payback.selector, token, amount);
   }
 
-  function _getWithdrawData(uint256 amount, address token) internal view returns (bytes memory) {
+  function _getWithdrawData(address token, uint256 amount) internal view returns (bytes memory) {
     return abi.encodeWithSelector(compoundV2Connector.withdraw.selector, token, amount);
   }
 
@@ -132,7 +132,7 @@ contract TestCompoundV2Connector is LendingHelper {
     uint256 borrowAmount = 100000000;
     _execute(_getBorrowData(getToken("usdc"), borrowAmount));
 
-    _execute(_getPaybackData(borrowAmount, getToken("usdc")));
+    _execute(_getPaybackData(getToken("usdc"), borrowAmount));
 
     assertEq(0, _getBorrowAmt(getToken("usdc"), address(this)));
   }
@@ -149,7 +149,7 @@ contract TestCompoundV2Connector is LendingHelper {
     _execute(_getBorrowData(getToken("usdc"), borrowAmount));
 
     vm.expectRevert(Errors.InvalidAmountAction.selector);
-    _execute(_getPaybackData(borrowAmount + 1000, getToken("usdc")));
+    _execute(_getPaybackData(getToken("usdc"), borrowAmount + 1000));
   }
 
   function test_Payback_Max() public {
@@ -163,7 +163,7 @@ contract TestCompoundV2Connector is LendingHelper {
     uint256 borrowAmount = 100000000;
     _execute(_getBorrowData(getToken("usdc"), borrowAmount));
 
-    _execute(_getPaybackData(type(uint256).max, getToken("usdc")));
+    _execute(_getPaybackData(getToken("usdc"), type(uint256).max));
 
     assertEq(0, _getCollateralAmt(getToken("usdc"), address(this)));
   }
@@ -179,8 +179,8 @@ contract TestCompoundV2Connector is LendingHelper {
     uint256 borrowAmount = 100000000;
     _execute(_getBorrowData(getToken("usdc"), borrowAmount));
 
-    _execute(_getPaybackData(borrowAmount, getToken("usdc")));
-    _execute(_getWithdrawData(depositAmount, getToken("dai")));
+    _execute(_getPaybackData(getToken("usdc"), borrowAmount));
+    _execute(_getWithdrawData(getToken("dai"), depositAmount));
 
     assertEq(0, _getCollateralAmt(getToken("dai"), address(this)));
   }
@@ -196,8 +196,8 @@ contract TestCompoundV2Connector is LendingHelper {
     uint256 borrowAmount = 100000000;
     _execute(_getBorrowData(getToken("usdc"), borrowAmount));
 
-    _execute(_getPaybackData(borrowAmount, getToken("usdc")));
-    _execute(_getWithdrawData(type(uint256).max, getToken("dai")));
+    _execute(_getPaybackData(getToken("usdc"), borrowAmount));
+    _execute(_getWithdrawData(getToken("dai"), type(uint256).max));
 
     assertEq(0, _getCollateralAmt(getToken("dai"), address(this)));
   }

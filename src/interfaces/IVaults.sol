@@ -21,10 +21,9 @@ interface IVaults {
 
   /**
    * @dev Add Vaults
-   * @param assets Array of asset addresses.
    * @param vaults Array of vault address.
    */
-  function addVaults(address[] calldata assets, address[] calldata vaults) external;
+  function addVaults(address[] calldata vaults) external;
 
   /**
    * @dev Remove Vaults

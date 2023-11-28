@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+import { console } from "forge-std/Console.sol";
+
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
@@ -76,11 +78,11 @@ contract AccountV1 is Initializable, IAccount {
     // collateral amount + borrowing power delegation amount
     IERC20(position.collateralAsset).safeTransferFrom(msg.sender, address(this), position.collateralAmount * 2);
 
-    _chargeFee(position.collateralAmount, position.collateralAsset);
+    // _chargeFee(position.collateralAmount, position.collateralAsset);
 
     (string[] memory _targetNames, bytes[] memory _datas) = abi.decode(data, (string[], bytes[]));
 
-    if (_compare(position.delegationTargetName, _targetNames[0])) revert Errors.InvalidDelegateTargetName();
+    if (!_compare(position.delegationTargetName, _targetNames[0])) revert Errors.InvalidDelegateTargetName();
 
     ADDRESSES_PROVIDER.connectorCall(_targetNames[0], abi.encodePacked(_datas[0])); // supply delegated assets
     ADDRESSES_PROVIDER.connectorCall(_targetNames[1], abi.encodePacked(_datas[1])); // deposit collateral
@@ -88,19 +90,21 @@ contract AccountV1 is Initializable, IAccount {
   }
 
   function closePosition(bytes32 key, bytes calldata data) external onlyRouter {
-    (address account,, address collateralAsset, uint256 collateralAmount,, string memory delegationTargetName) =
+    (address account,, address collateralAsset,, uint256 collateralAmount, string memory delegationTargetName) =
       _getRouter().positions(key);
     if (account != _owner) revert Errors.CallerNotPositionOwner();
 
     (string[] memory _targetNames, bytes[] memory _datas) = abi.decode(data, (string[], bytes[]));
 
-    if (_compare(delegationTargetName, _targetNames[2])) revert Errors.InvalidDelegateTargetName();
+    if (!_compare(delegationTargetName, _targetNames[2])) revert Errors.InvalidDelegateTargetName();
 
     ADDRESSES_PROVIDER.connectorCall(_targetNames[0], _datas[0]); // repay debt
     ADDRESSES_PROVIDER.connectorCall(_targetNames[1], _datas[1]); // withdraw collateral with interest and send it to router
     ADDRESSES_PROVIDER.connectorCall(_targetNames[2], _datas[2]); // redeem delegated assets
-    // only approve collateral amount to router(interest is not included)
-    IERC20(collateralAsset).forceApprove(msg.sender, collateralAmount);
+      // only transfer collateral amount to router(interest is not included)
+    console.log("msg.sender address should be router", msg.sender);
+    console.log("transfer collateral amount to router", collateralAmount);
+    IERC20(collateralAsset).safeTransfer(msg.sender, collateralAmount);
   }
 
   function claimTokens(address token, uint256 amount) external override onlyOwner {

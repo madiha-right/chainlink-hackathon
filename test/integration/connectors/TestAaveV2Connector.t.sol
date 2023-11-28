@@ -36,14 +36,14 @@ contract LendingHelper is Tokens {
   }
 
   function _getBorrowAmt(address token, address recipient) internal view returns (uint256 borrowAmount) {
-    borrowAmount = aaveV2Connector.getPaybackBalance(token, RATE_TYPE, recipient);
+    borrowAmount = aaveV2Connector.getPaybackBalance(token, recipient, RATE_TYPE);
   }
 
-  function _getPaybackData(uint256 amount, address token) internal view returns (bytes memory) {
+  function _getPaybackData(address token, uint256 amount) internal view returns (bytes memory) {
     return abi.encodeWithSelector(aaveV2Connector.payback.selector, token, amount, RATE_TYPE);
   }
 
-  function _getWithdrawData(uint256 amount, address token) internal view returns (bytes memory) {
+  function _getWithdrawData(address token, uint256 amount) internal view returns (bytes memory) {
     return abi.encodeWithSelector(aaveV2Connector.withdraw.selector, token, amount);
   }
 
@@ -148,10 +148,10 @@ contract TestAaveV2Connector is LendingHelper {
   }
 
   function _paybackWeth(uint256 _amount) internal {
-    _execute(_getPaybackData(_amount, getToken("weth")));
+    _execute(_getPaybackData(getToken("weth"), _amount));
   }
 
   function _withdraw(uint256 _amount) internal {
-    _execute(_getWithdrawData(_amount, getToken("dai")));
+    _execute(_getWithdrawData(getToken("dai"), _amount));
   }
 }

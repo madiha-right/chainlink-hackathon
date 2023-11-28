@@ -63,7 +63,7 @@ contract AaveV3Connector is IAaveV3Connector {
   }
 
   /// @dev See {IAaveV3Connector-borrow}.
-  function borrow(address token, uint256 rateMode, uint256 amount) external {
+  function borrow(address token, uint256 amount, uint256 rateMode) external {
     IPool aave = IPool(ADDRESSES_PROVIDER.getPool());
 
     aave.borrow(token, amount, rateMode, REFERRAL_CODE, address(this));
@@ -73,7 +73,7 @@ contract AaveV3Connector is IAaveV3Connector {
   function payback(address token, uint256 amount, uint256 rateMode) external {
     IPool aave = IPool(ADDRESSES_PROVIDER.getPool());
 
-    uint256 debtAmount = getPaybackBalance(token, rateMode, address(this));
+    uint256 debtAmount = getPaybackBalance(token, address(this), rateMode);
 
     if (amount < debtAmount) revert Errors.InvalidAmountAction();
 
@@ -85,7 +85,7 @@ contract AaveV3Connector is IAaveV3Connector {
   /* ============ Public Functions ============ */
 
   /// @dev See {IAaveV3Connector-getPaybackBalance}.
-  function getPaybackBalance(address token, uint256 rateMode, address user) public view returns (uint256) {
+  function getPaybackBalance(address token, address user, uint256 rateMode) public view returns (uint256) {
     (, uint256 stableDebt, uint256 variableDebt,,,,,,) = DATA_PROVIDER.getUserReserveData(token, user);
     return rateMode == 1 ? stableDebt : variableDebt;
   }

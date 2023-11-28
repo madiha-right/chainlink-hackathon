@@ -30,11 +30,11 @@ contract LendingHelper is Tokens {
     aaveV3Connector = new AaveV3Connector();
   }
 
-  function _getPaybackData(uint256 amount, address token) internal view returns (bytes memory) {
+  function _getPaybackData(address token, uint256 amount) internal view returns (bytes memory) {
     return abi.encodeWithSelector(aaveV3Connector.payback.selector, token, amount, RATE_TYPE);
   }
 
-  function _getWithdrawData(uint256 amount, address token) internal view returns (bytes memory) {
+  function _getWithdrawData(address token, uint256 amount) internal view returns (bytes memory) {
     return abi.encodeWithSelector(aaveV3Connector.withdraw.selector, token, amount);
   }
 
@@ -107,7 +107,7 @@ contract TestAaveV3Connector is LendingHelper {
     uint256 borrowAmount = 0.1 ether;
     _execute(_getBorrowData(getToken("weth"), borrowAmount));
 
-    assertEq(borrowAmount, aaveV3Connector.getPaybackBalance(getToken("weth"), RATE_TYPE, address(this)));
+    assertEq(borrowAmount, aaveV3Connector.getPaybackBalance(getToken("weth"), address(this), RATE_TYPE));
   }
 
   function test_Payback() public {
@@ -121,9 +121,9 @@ contract TestAaveV3Connector is LendingHelper {
     uint256 borrowAmount = 0.1 ether;
     _execute(_getBorrowData(getToken("weth"), borrowAmount));
 
-    _execute(_getPaybackData(borrowAmount, getToken("weth")));
+    _execute(_getPaybackData(getToken("weth"), borrowAmount));
 
-    assertEq(0, aaveV3Connector.getPaybackBalance(getToken("weth"), RATE_TYPE, address(this)));
+    assertEq(0, aaveV3Connector.getPaybackBalance(getToken("weth"), address(this), RATE_TYPE));
   }
 
   function test_Payback_Max() public {
@@ -137,9 +137,9 @@ contract TestAaveV3Connector is LendingHelper {
     uint256 borrowAmount = 0.1 ether;
     _execute(_getBorrowData(getToken("weth"), borrowAmount));
 
-    _execute(_getPaybackData(type(uint256).max, getToken("weth")));
+    _execute(_getPaybackData(getToken("weth"), type(uint256).max));
 
-    assertEq(0, aaveV3Connector.getPaybackBalance(getToken("weth"), RATE_TYPE, address(this)));
+    assertEq(0, aaveV3Connector.getPaybackBalance(getToken("weth"), address(this), RATE_TYPE));
   }
 
   function test_Withdraw() public {
@@ -153,8 +153,8 @@ contract TestAaveV3Connector is LendingHelper {
     uint256 borrowAmount = 0.1 ether;
     _execute(_getBorrowData(getToken("weth"), borrowAmount));
 
-    _execute(_getPaybackData(borrowAmount, getToken("weth")));
-    _execute(_getWithdrawData(depositAmount, getToken("dai")));
+    _execute(_getPaybackData(getToken("weth"), borrowAmount));
+    _execute(_getWithdrawData(getToken("dai"), depositAmount));
 
     assertEq(0, aaveV3Connector.getCollateralBalance(getToken("dai"), address(this)));
   }

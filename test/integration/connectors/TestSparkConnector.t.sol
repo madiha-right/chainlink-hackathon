@@ -31,11 +31,11 @@ contract LendingHelper is Tokens {
     sparkConnector = new SparkConnector();
   }
 
-  function _getPaybackData(uint256 amount, address token) internal view returns (bytes memory) {
+  function _getPaybackData(address token, uint256 amount) internal view returns (bytes memory) {
     return abi.encodeWithSelector(sparkConnector.payback.selector, token, amount, RATE_TYPE);
   }
 
-  function _getWithdrawData(uint256 amount, address token) internal view returns (bytes memory) {
+  function _getWithdrawData(address token, uint256 amount) internal view returns (bytes memory) {
     return abi.encodeWithSelector(sparkConnector.withdraw.selector, token, amount);
   }
 
@@ -107,7 +107,7 @@ contract TestAaveV3Connector is LendingHelper {
     uint256 borrowAmount = 1 ether;
     _execute(_getBorrowData(getToken("dai"), borrowAmount));
 
-    assertEq(borrowAmount, sparkConnector.getPaybackBalance(getToken("dai"), RATE_TYPE, address(this)));
+    assertEq(borrowAmount, sparkConnector.getPaybackBalance(getToken("dai"), address(this), RATE_TYPE));
   }
 
   function test_Payback() public {
@@ -120,9 +120,9 @@ contract TestAaveV3Connector is LendingHelper {
     uint256 borrowAmount = 0.1 ether;
     _execute(_getBorrowData(getToken("dai"), borrowAmount));
 
-    _execute(_getPaybackData(borrowAmount, getToken("dai")));
+    _execute(_getPaybackData(getToken("dai"), borrowAmount));
 
-    assertEq(0, sparkConnector.getPaybackBalance(getToken("dai"), RATE_TYPE, address(this)));
+    assertEq(0, sparkConnector.getPaybackBalance(getToken("dai"), address(this), RATE_TYPE));
   }
 
   function test_Payback_Max() public {
@@ -135,9 +135,9 @@ contract TestAaveV3Connector is LendingHelper {
     uint256 borrowAmount = 0.1 ether;
     _execute(_getBorrowData(getToken("dai"), borrowAmount));
 
-    _execute(_getPaybackData(type(uint256).max, getToken("dai")));
+    _execute(_getPaybackData(getToken("dai"), type(uint256).max));
 
-    assertEq(0, sparkConnector.getPaybackBalance(getToken("dai"), RATE_TYPE, address(this)));
+    assertEq(0, sparkConnector.getPaybackBalance(getToken("dai"), address(this), RATE_TYPE));
   }
 
   function test_Withdraw() public {
@@ -150,8 +150,8 @@ contract TestAaveV3Connector is LendingHelper {
     uint256 borrowAmount = 0.1 ether;
     _execute(_getBorrowData(getToken("dai"), borrowAmount));
 
-    _execute(_getPaybackData(borrowAmount, getToken("dai")));
-    _execute(_getWithdrawData(depositAmount, getToken("weth")));
+    _execute(_getPaybackData(getToken("dai"), borrowAmount));
+    _execute(_getWithdrawData(getToken("weth"), depositAmount));
 
     assertEq(0, sparkConnector.getCollateralBalance(getToken("weth"), address(this)));
   }

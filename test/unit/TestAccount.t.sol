@@ -8,7 +8,7 @@ import { Errors } from "contracts/lib/Errors.sol";
 import { AddressesProvider } from "contracts/AddressesProvider.sol";
 import { AccountV1 } from "contracts/Account.sol";
 
-import { ERC20Mock } from "mocks/ERC20Mock.sol";
+import { ERC20Mock } from "contracts/mocks/ERC20Mock.sol";
 
 contract TestAccount is Test {
   AccountV1 account;

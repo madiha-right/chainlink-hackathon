@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+import { console } from "forge-std/Console.sol";
+
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IERC4626 } from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -136,8 +138,8 @@ contract Router is VersionedInitializable, IRouter {
     if (account == address(0)) revert Errors.AccountDoesNotExist();
 
     IAccount(account).closePosition(key, data);
-
-    IERC20(position.collateralAsset).safeTransferFrom(account, address(this), position.collateralAmount);
+    console.log("router address in router", address(this));
+    console.log("collateral balance2", IERC20(position.collateralAsset).balanceOf(address(this)));
     _depositToVault(position.collateralAsset, position.collateralAmount);
 
     emit ClosePosition(key, account, position);
@@ -202,6 +204,9 @@ contract Router is VersionedInitializable, IRouter {
 
     // collateral amount + borrowing power delegation amount
     IERC20(position.collateralAsset).forceApprove(account, position.collateralAmount * 2);
+
+    _withdrawFromVault(position.collateralAsset, position.collateralAmount);
+
     IAccount(account).openPosition(position, data);
 
     // Get the position on the key because, update it in the process of creating
@@ -210,6 +215,8 @@ contract Router is VersionedInitializable, IRouter {
 
   /**
    * @dev Deposit asset to corresposding vault.
+   * @param asset Asset to deposit.
+   * @param amount Amount to deposit.
    */
   function _depositToVault(address asset, uint256 amount) private {
     address vaults = ADDRESSES_PROVIDER.getVaults();
@@ -222,6 +229,20 @@ contract Router is VersionedInitializable, IRouter {
     }
 
     IERC4626(vault).deposit(amount, address(this));
+  }
+
+  /**
+   * @dev Withdraw asset from corresposding vault.
+   * @param asset Asset to withdraw.
+   * @param amount Amount to withdraw.
+   */
+  function _withdrawFromVault(address asset, uint256 amount) private {
+    address vaults = ADDRESSES_PROVIDER.getVaults();
+    address vault = IVaults(vaults).vaults(asset);
+
+    if (vault == address(0)) revert Errors.VaultDoesNotExist();
+
+    IERC4626(vault).withdraw(amount, address(this), address(this));
   }
 
   /**

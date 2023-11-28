@@ -39,10 +39,9 @@ interface IConfigurator {
 
   /**
    * @dev Add Vaults to the vaults contract
-   * @param assets Array of underlying asset addresses of Vaults.
    * @param addresses Array of Vault Address.
    */
-  function addVaults(address[] calldata assets, address[] calldata addresses) external;
+  function addVaults(address[] calldata addresses) external;
 
   /**
    * @dev Remove Vaults on the vaults contract

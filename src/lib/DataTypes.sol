@@ -6,8 +6,8 @@ library DataTypes {
     address account;
     address debtAsset;
     address collateralAsset;
-    uint256 collateralAmount;
     uint256 borrowAmount;
+    uint256 collateralAmount;
     string delegationTargetName;
   }
 }

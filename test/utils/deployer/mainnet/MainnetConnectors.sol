@@ -14,29 +14,29 @@ contract DeployMainnetConnectors {
   SparkConnector public sparkConnector;
   SDAIConnector public sDAIConnector;
 
-  function deployConnectors() public returns (string[] memory _names, address[] memory _connectors) {
+  function deployConnectors() public returns (string[] memory, address[] memory) {
     _deployYieldConnectors();
     _deployLendingConnectors();
 
-    _names = new string[](5);
+    string[] memory names = new string[](5);
     // lending connectors
-    _names[0] = aaveV2Connector.NAME();
-    _names[1] = aaveV3Connector.NAME();
-    _names[2] = compoundV2Connector.NAME();
-    _names[3] = sparkConnector.NAME();
+    names[0] = aaveV2Connector.NAME();
+    names[1] = aaveV3Connector.NAME();
+    names[2] = compoundV2Connector.NAME();
+    names[3] = sparkConnector.NAME();
     // yield connectors
-    _names[4] = sDAIConnector.NAME();
+    names[4] = sDAIConnector.NAME();
 
-    _connectors = new address[](5);
+    address[] memory connectors = new address[](5);
     // lending connectors
-    _connectors[0] = address(aaveV2Connector);
-    _connectors[1] = address(aaveV3Connector);
-    _connectors[2] = address(compoundV2Connector);
-    _connectors[3] = address(sparkConnector);
+    connectors[0] = address(aaveV2Connector);
+    connectors[1] = address(aaveV3Connector);
+    connectors[2] = address(compoundV2Connector);
+    connectors[3] = address(sparkConnector);
     // yield connectors
-    _connectors[4] = address(sDAIConnector);
+    connectors[4] = address(sDAIConnector);
 
-    return (_names, _connectors);
+    return (names, connectors);
   }
 
   function _deployLendingConnectors() private {

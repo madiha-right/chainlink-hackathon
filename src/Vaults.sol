@@ -46,16 +46,13 @@ contract Vaults is IVaults {
   /* ============ External Functions ============ */
 
   /// @dev See {IVaults-addVaults}.
-  function addVaults(address[] calldata _assets, address[] calldata _vaults) external onlyConfigurator {
-    if (_assets.length != _vaults.length) revert Errors.InvalidVaultsLength();
-
+  function addVaults(address[] calldata _vaults) external onlyConfigurator {
     for (uint256 i = 0; i < _vaults.length; i++) {
-      address asset = _assets[i];
       address vault = _vaults[i];
+      address asset = IERC4626(vault).asset();
 
       if (vaults[asset] != address(0)) revert Errors.VaultAlreadyExist();
       if (vault == address(0)) revert Errors.InvalidVaultAddress();
-      if (IERC4626(vault).asset() != asset) revert Errors.VaultAssetDoesNotMatch();
 
       vaults[asset] = vault;
 

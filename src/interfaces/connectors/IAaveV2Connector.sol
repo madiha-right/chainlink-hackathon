@@ -24,10 +24,10 @@ interface IAaveV2Connector {
    * @dev Borrow ERC20_Token.
    * @notice Borrow a token using Aave v2
    * @param token The address of the token to borrow.(For ETH: 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)
-   * @param rateMode The type of borrow debt. (For Stable: 1, Variable: 2)
    * @param amount The amount of the token to borrow.
+   * @param rateMode The type of borrow debt. (For Stable: 1, Variable: 2)
    */
-  function borrow(address token, uint256 rateMode, uint256 amount) external;
+  function borrow(address token, uint256 amount, uint256 rateMode) external;
 
   /**
    * @dev Payback borrowed ERC20_Token.
@@ -41,10 +41,10 @@ interface IAaveV2Connector {
   /**
    * @dev Get total debt balance & fee for an asset
    * @param token token address of the debt.(For ETH: 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)
-   * @param rateMode Borrow rate mode (Stable = 1, Variable = 2)
    * @param user Address whose balance we get.
+   * @param rateMode Borrow rate mode (Stable = 1, Variable = 2)
    */
-  function getPaybackBalance(address token, uint256 rateMode, address user) external view returns (uint256);
+  function getPaybackBalance(address token, address user, uint256 rateMode) external view returns (uint256);
 
   /**
    * @dev Get total collateral balance for an asset
