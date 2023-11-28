@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import { console } from "forge-std/Console.sol";
-
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IERC4626 } from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -106,15 +104,11 @@ contract Router is VersionedInitializable, IRouter {
 
   /// @dev See {IRouter-undelegate}.
   function undelegate(address asset, uint256 amount) external {
-    if (amount <= balances[asset][msg.sender]) revert Errors.InvalidAmountAction();
+    if (amount > balances[asset][msg.sender]) revert Errors.InsufficientBalance();
 
     balances[asset][msg.sender] -= amount;
-    address vaults = ADDRESSES_PROVIDER.getVaults();
-    address vault = IVaults(vaults).vaults(asset);
 
-    if (vault == address(0)) revert Errors.VaultDoesNotExist();
-
-    IERC4626(vault).withdraw(amount, address(this), msg.sender);
+    _withdrawFromVault(asset, amount, msg.sender);
   }
 
   /// @dev See {IRouter-setFee}.
@@ -138,8 +132,6 @@ contract Router is VersionedInitializable, IRouter {
     if (account == address(0)) revert Errors.AccountDoesNotExist();
 
     IAccount(account).closePosition(key, data);
-    console.log("router address in router", address(this));
-    console.log("collateral balance2", IERC20(position.collateralAsset).balanceOf(address(this)));
     _depositToVault(position.collateralAsset, position.collateralAmount);
 
     emit ClosePosition(key, account, position);
@@ -205,7 +197,7 @@ contract Router is VersionedInitializable, IRouter {
     // collateral amount + borrowing power delegation amount
     IERC20(position.collateralAsset).forceApprove(account, position.collateralAmount * 2);
 
-    _withdrawFromVault(position.collateralAsset, position.collateralAmount);
+    _withdrawFromVault(position.collateralAsset, position.collateralAmount, address(this));
 
     IAccount(account).openPosition(position, data);
 
@@ -235,14 +227,15 @@ contract Router is VersionedInitializable, IRouter {
    * @dev Withdraw asset from corresposding vault.
    * @param asset Asset to withdraw.
    * @param amount Amount to withdraw.
+   * @param receiver Receiver of the withdrawn amount of asset.
    */
-  function _withdrawFromVault(address asset, uint256 amount) private {
+  function _withdrawFromVault(address asset, uint256 amount, address receiver) private {
     address vaults = ADDRESSES_PROVIDER.getVaults();
     address vault = IVaults(vaults).vaults(asset);
 
     if (vault == address(0)) revert Errors.VaultDoesNotExist();
 
-    IERC4626(vault).withdraw(amount, address(this), address(this));
+    IERC4626(vault).withdraw(amount, receiver, address(this));
   }
 
   /**

@@ -16,9 +16,9 @@ contract LendingHelper is Tokens {
   SDAIConnector sDAIConnector;
 
   function setUp() public {
-    // string memory url = vm.rpcUrl("mainnet");
-    // uint256 forkId = vm.createFork(url);
-    // vm.selectFork(forkId);
+    string memory url = vm.rpcUrl("mainnet");
+    uint256 forkId = vm.createFork(url);
+    vm.selectFork(forkId);
 
     sDAIConnector = new SDAIConnector();
   }

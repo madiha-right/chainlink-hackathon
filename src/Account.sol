@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import { console } from "forge-std/Console.sol";
-
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
@@ -102,8 +100,6 @@ contract AccountV1 is Initializable, IAccount {
     ADDRESSES_PROVIDER.connectorCall(_targetNames[1], _datas[1]); // withdraw collateral with interest and send it to router
     ADDRESSES_PROVIDER.connectorCall(_targetNames[2], _datas[2]); // redeem delegated assets
       // only transfer collateral amount to router(interest is not included)
-    console.log("msg.sender address should be router", msg.sender);
-    console.log("transfer collateral amount to router", collateralAmount);
     IERC20(collateralAsset).safeTransfer(msg.sender, collateralAmount);
   }
 

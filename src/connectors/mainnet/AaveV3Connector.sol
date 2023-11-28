@@ -73,13 +73,15 @@ contract AaveV3Connector is IAaveV3Connector {
   function payback(address token, uint256 amount, uint256 rateMode) external {
     IPool aave = IPool(ADDRESSES_PROVIDER.getPool());
 
-    uint256 debtAmount = getPaybackBalance(token, address(this), rateMode);
+    if (amount == type(uint256).max) {
+      uint256 balance = IERC20(token).balanceOf(address(this));
+      uint256 amountDebt = getPaybackBalance(token, address(this), rateMode);
+      amount = balance <= amountDebt ? balance : amountDebt;
+    }
 
-    if (amount < debtAmount) revert Errors.InvalidAmountAction();
+    IERC20(token).forceApprove(address(aave), amount);
 
-    IERC20(token).forceApprove(address(aave), debtAmount);
-
-    aave.repay(token, debtAmount, rateMode, address(this));
+    aave.repay(token, amount, rateMode, address(this));
   }
 
   /* ============ Public Functions ============ */

@@ -58,15 +58,12 @@ contract CompoundV2Connector is ICompoundV2Connector {
   function payback(address token, uint256 amount) external {
     CErc20Interface cToken = getCToken(token);
 
-    uint256 debtAmount = cToken.borrowBalanceCurrent(address(this));
+    amount = amount == type(uint256).max ? cToken.borrowBalanceCurrent(address(this)) : amount;
 
-    if (amount < debtAmount) revert Errors.InvalidAmountAction();
-    if (amount != type(uint256).max && amount > IERC20(token).balanceOf(address(this))) {
-      revert Errors.InvalidAmountAction();
-    }
+    if (IERC20(token).balanceOf(address(this)) < amount) revert Errors.InsufficientBalance();
 
-    IERC20(token).forceApprove(address(cToken), debtAmount);
-    cToken.repayBorrow(debtAmount);
+    IERC20(token).forceApprove(address(cToken), amount);
+    cToken.repayBorrow(amount);
   }
 
   /* ============ Public Functions ============ */

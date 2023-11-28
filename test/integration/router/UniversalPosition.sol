@@ -107,43 +107,17 @@ contract UniversalPosition is DeployCoreContracts {
     names[2] = IConnector(delegationConnector).NAME();
   }
 
-  function _getOpenConnectorDatas(DataTypes.Position memory position) internal view virtual returns (bytes[] memory) {
-    // datas = new bytes[](3);
-    // datas[0] = _getDepositSDAICallData(position.collateralAmount);
-    // datas[1] = _getDepositCallData(position.collateralAsset, position.collateralAmount);
-    // datas[2] = _getBorrowCallData(position.debtAsset, position.borrowAmount);
-  }
+  function _getOpenConnectorDatas(DataTypes.Position memory position) internal view virtual returns (bytes[] memory) { }
 
   function _getCloseConnectorDatas(DataTypes.Position memory position, bytes32 positionKey)
     internal
     view
     virtual
     returns (bytes[] memory)
-  {
-    // (,,, uint256 borrowAmount, uint256 collateralAmount,) = router.positions(positionKey);
-
-    // datas = new bytes[](3);
-    // datas[0] = _getPaybackCallData(position.debtAsset, borrowAmount);
-    // datas[1] = _getWithdrawCallData(position.collateralAsset, collateralAmount);
-    // datas[2] = _getRedeemCallData(position.account);
-  }
+  { }
 
   function _getPositionKey(address user) internal view returns (bytes32 key) {
     uint256 index = router.positionsIndex(user);
     key = router.getKey(user, index + 1);
   }
-
-  // virtual functions
-
-  // function _getDepositCallData(address token, uint256 amount) internal view virtual returns (bytes memory) { }
-
-  // function _getBorrowCallData(address token, uint256 amount) internal view virtual returns (bytes memory) { }
-
-  // function _getPaybackCallData(address token, uint256 amount) internal view virtual returns (bytes memory) { }
-
-  // function _getWithdrawCallData(address token, uint256 amount) internal view virtual returns (bytes memory) { }
-
-  // function _getDepositSDAICallData(uint256 amount) internal view virtual returns (bytes memory) { }
-
-  // function _getRedeemCallData(address user) internal view virtual returns (bytes memory) { }
 }

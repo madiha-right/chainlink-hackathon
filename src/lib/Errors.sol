@@ -15,6 +15,7 @@ library Errors {
   error AccountDoesNotExist(); // The sender does not have an account
   error InvalidChargeAmount(); // Invalid amount to charge fee
   error InvalidAmountAction(); // Invalid amount to deposit or withdraw
+  error InsufficientBalance(); // Insufficient balance to perform the operation
 
   error NotConnector(); // There is no connector with this name
   error InvalidConnectorAddress(); // The address of the connector is invalid
