@@ -44,7 +44,10 @@ interface IRouter {
 
   function positionsIndex(address account) external view returns (uint256);
 
-  function positions(bytes32 key) external view returns (address, address, address, uint256, uint256, string memory);
+  function positions(bytes32 key)
+    external
+    view
+    returns (address, address, address, uint256, uint256, string memory, uint64, address);
 
   function accounts(address owner) external view returns (address);
 
@@ -83,6 +86,14 @@ interface IRouter {
    * @param data Calldata for the openPositionCallback.
    */
   function closePosition(bytes32 key, bytes calldata data) external;
+
+  /**
+   * @dev Called by the ccip contract to open a loan position.
+   * @param token Address of the token to be deposited.
+   * @param amount Amount of the token to be deposited.
+   * @param data Calldata to open a loan position.
+   */
+  function openLoanPosition(address token, uint256 amount, bytes calldata data) external;
 
   /**
    * @dev Checks if the user has an account otherwise creates and initializes it.

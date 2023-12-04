@@ -11,6 +11,9 @@ import { SafeERC20 } from
 import { EnumerableMap } from
   "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/utils/structs/EnumerableMap.sol";
 
+import { IAddressesProvider } from "./interfaces/IAddressesProvider.sol";
+import { IRouter } from "./interfaces/IRouter.sol";
+
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
@@ -19,7 +22,7 @@ import { EnumerableMap } from
 
 /// @title - A simple messenger contract for transferring/receiving tokens and data across chains.
 /// @dev - This example shows how to recover tokens in case of revert
-contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
+contract Ccip is CCIPReceiver, OwnerIsCreator {
   using EnumerableMap for EnumerableMap.Bytes32ToUintMap;
   using SafeERC20 for IERC20;
 
@@ -44,18 +47,18 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   }
 
   // Event emitted when a message is sent to another chain.
+  // The chain selector of the destination chain.
+  // The address of the receiver on the destination chain.
+  // The text being sent.
+  // The token address that was transferred.
+  // The token amount that was transferred.
+  // the token address used to pay CCIP fees.
+  // The fees paid for sending the message.
   event MessageSent( // The unique ID of the CCIP message.
-    // The chain selector of the destination chain.
-    // The address of the receiver on the destination chain.
-    // The text being sent.
-    // The token address that was transferred.
-    // The token amount that was transferred.
-    // the token address used to pay CCIP fees.
-    // The fees paid for sending the message.
     bytes32 indexed messageId,
     uint64 indexed destinationChainSelector,
     address receiver,
-    string text,
+    bytes data,
     address token,
     uint256 tokenAmount,
     address feeToken,
@@ -63,16 +66,16 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   );
 
   // Event emitted when a message is received from another chain.
+  // The chain selector of the source chain.
+  // The address of the sender from the source chain.
+  // The text that was received.
+  // The token address that was transferred.
+  // The token amount that was transferred.
   event MessageReceived( // The unique ID of the CCIP message.
-    // The chain selector of the source chain.
-    // The address of the sender from the source chain.
-    // The text that was received.
-    // The token address that was transferred.
-    // The token amount that was transferred.
     bytes32 indexed messageId,
     uint64 indexed sourceChainSelector,
     address sender,
-    string text,
+    bytes data,
     address token,
     uint256 tokenAmount
   );
@@ -80,10 +83,13 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   event MessageFailed(bytes32 indexed messageId, bytes reason);
   event MessageRecovered(bytes32 indexed messageId);
 
+  // The contract by which all other contact addresses are obtained.
+  IAddressesProvider public immutable ADDRESSES_PROVIDER;
+
   bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
   address private s_lastReceivedTokenAddress; // Store the last received token address.
   uint256 private s_lastReceivedTokenAmount; // Store the last received amount.
-  string private s_lastReceivedText; // Store the last received text.
+  bytes private s_lastReceivedData; // Store the last received data.
 
   // Mapping to keep track of allowlisted destination chains.
   mapping(uint64 => bool) public allowlistedDestinationChains;
@@ -106,9 +112,11 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   bool internal s_simRevert = false;
 
   /// @notice Constructor initializes the contract with the router address.
+  /// @param _provider The address of the provider contract.
   /// @param _router The address of the router contract.
   /// @param _link The address of the link contract.
-  constructor(address _router, address _link) CCIPReceiver(_router) {
+  constructor(address _provider, address _router, address _link) CCIPReceiver(_router) {
+    ADDRESSES_PROVIDER = IAddressesProvider(_provider);
     s_linkToken = IERC20(_link);
   }
 
@@ -168,21 +176,21 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   /// @dev Assumes your contract has sufficient LINK to pay for CCIP fees.
   /// @param _destinationChainSelector The identifier (aka selector) for the destination blockchain.
   /// @param _receiver The address of the recipient on the destination blockchain.
-  /// @param _text The string data to be sent.
+  /// @param _data The data to be sent.
   /// @param _token token address.
   /// @param _amount token amount.
   /// @return messageId The ID of the CCIP message that was sent.
-  function sendMessagePayLINK(
+  function openLoanPositionPayLink(
     uint64 _destinationChainSelector,
     address _receiver,
-    string calldata _text,
+    bytes calldata _data,
     address _token,
     uint256 _amount
   ) external onlyOwner onlyAllowlistedDestinationChain(_destinationChainSelector) returns (bytes32 messageId) {
     // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
     // address(linkToken) means fees are paid in LINK
     Client.EVM2AnyMessage memory evm2AnyMessage =
-      _buildCCIPMessage(_receiver, _text, _token, _amount, address(s_linkToken));
+      _buildCCIPMessage(_receiver, _data, _token, _amount, address(s_linkToken));
 
     // Initialize a router client instance to interact with cross-chain router
     IRouterClient router = IRouterClient(this.getRouter());
@@ -205,7 +213,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
 
     // Emit an event with message details
     emit MessageSent(
-      messageId, _destinationChainSelector, _receiver, _text, _token, _amount, address(s_linkToken), fees
+      messageId, _destinationChainSelector, _receiver, _data, _token, _amount, address(s_linkToken), fees
     );
 
     // Return the message ID
@@ -217,20 +225,20 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   /// @dev Assumes your contract has sufficient native gas like ETH on Ethereum or MATIC on Polygon.
   /// @param _destinationChainSelector The identifier (aka selector) for the destination blockchain.
   /// @param _receiver The address of the recipient on the destination blockchain.
-  /// @param _text The string data to be sent.
+  /// @param _data The data to be sent.
   /// @param _token token address.
   /// @param _amount token amount.
   /// @return messageId The ID of the CCIP message that was sent.
-  function sendMessagePayNative(
+  function openLoanPositionPayNative(
     uint64 _destinationChainSelector,
     address _receiver,
-    string calldata _text,
+    bytes calldata _data,
     address _token,
     uint256 _amount
   ) external onlyOwner onlyAllowlistedDestinationChain(_destinationChainSelector) returns (bytes32 messageId) {
     // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
     // address(0) means fees are paid in native gas
-    Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessage(_receiver, _text, _token, _amount, address(0));
+    Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessage(_receiver, _data, _token, _amount, address(0));
 
     // Initialize a router client instance to interact with cross-chain router
     IRouterClient router = IRouterClient(this.getRouter());
@@ -249,7 +257,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     messageId = router.ccipSend{ value: fees }(_destinationChainSelector, evm2AnyMessage);
 
     // Emit an event with message details
-    emit MessageSent(messageId, _destinationChainSelector, _receiver, _text, _token, _amount, address(0), fees);
+    emit MessageSent(messageId, _destinationChainSelector, _receiver, _data, _token, _amount, address(0), fees);
 
     // Return the message ID
     return messageId;
@@ -259,16 +267,16 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
    * @notice Returns the details of the last CCIP received message.
    * @dev This function retrieves the ID, text, token address, and token amount of the last received CCIP message.
    * @return messageId The ID of the last received CCIP message.
-   * @return text The text of the last received CCIP message.
+   * @return datas The array of data of the last received CCIP message.
    * @return tokenAddress The address of the token in the last CCIP received message.
    * @return tokenAmount The amount of the token in the last CCIP received message.
    */
   function getLastReceivedMessageDetails()
     public
     view
-    returns (bytes32 messageId, string memory text, address tokenAddress, uint256 tokenAmount)
+    returns (bytes32 messageId, bytes memory datas, address tokenAddress, uint256 tokenAmount)
   {
-    return (s_lastReceivedMessageId, s_lastReceivedText, s_lastReceivedTokenAddress, s_lastReceivedTokenAmount);
+    return (s_lastReceivedMessageId, s_lastReceivedData, s_lastReceivedTokenAddress, s_lastReceivedTokenAmount);
   }
 
   /**
@@ -361,31 +369,44 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
 
   function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
     s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
-    s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
+    s_lastReceivedData = abi.decode(any2EvmMessage.data, (bytes)); // abi-decoding of the sent data
     // Expect one token to be transferred at once, but you can transfer several tokens.
     s_lastReceivedTokenAddress = any2EvmMessage.destTokenAmounts[0].token;
     s_lastReceivedTokenAmount = any2EvmMessage.destTokenAmounts[0].amount;
+
     emit MessageReceived(
       any2EvmMessage.messageId,
       any2EvmMessage.sourceChainSelector, // fetch the source chain identifier (aka selector)
       abi.decode(any2EvmMessage.sender, (address)), // abi-decoding of the sender address,
-      abi.decode(any2EvmMessage.data, (string)),
+      abi.decode(any2EvmMessage.data, (bytes)),
       any2EvmMessage.destTokenAmounts[0].token,
       any2EvmMessage.destTokenAmounts[0].amount
+    );
+
+    _continueOpenPosition(any2EvmMessage);
+  }
+
+  function _continueOpenPosition(Client.Any2EVMMessage memory any2EvmMessage) internal {
+    bytes memory data = abi.decode(any2EvmMessage.data, (bytes)); // abi-decoding of the sent data
+    address router = ADDRESSES_PROVIDER.getRouter();
+
+    IERC20(any2EvmMessage.destTokenAmounts[0].token).safeApprove(router, any2EvmMessage.destTokenAmounts[0].amount);
+    IRouter(router).openLoanPosition(
+      any2EvmMessage.destTokenAmounts[0].token, any2EvmMessage.destTokenAmounts[0].amount, data
     );
   }
 
   /// @notice Construct a CCIP message.
   /// @dev This function will create an EVM2AnyMessage struct with all the necessary information for programmable tokens transfer.
   /// @param _receiver The address of the receiver.
-  /// @param _text The string data to be sent.
+  /// @param _data The data to be sent.
   /// @param _token The token to be transferred.
   /// @param _amount The amount of the token to be transferred.
   /// @param _feeTokenAddress The address of the token used for fees. Set address(0) for native gas.
   /// @return Client.EVM2AnyMessage Returns an EVM2AnyMessage struct which contains information for sending a CCIP message.
   function _buildCCIPMessage(
     address _receiver,
-    string calldata _text,
+    bytes calldata _data,
     address _token,
     uint256 _amount,
     address _feeTokenAddress
@@ -397,7 +418,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
     Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
       receiver: abi.encode(_receiver), // ABI-encoded receiver address
-      data: abi.encode(_text), // ABI-encoded string
+      data: abi.encode(_data), // ABI-encoded string
       tokenAmounts: tokenAmounts, // The amount and type of token being transferred
       extraArgs: Client._argsToBytes(
         // Additional arguments, setting gas limit and non-strict sequencing mode

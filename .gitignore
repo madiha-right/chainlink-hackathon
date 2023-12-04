@@ -15,5 +15,9 @@ docs/
 .env
 
 # Libraries
-lib/forge-std
-lib/openzeppelin-contracts
+lib/
+
+# Node modules
+node_modules/
+
+

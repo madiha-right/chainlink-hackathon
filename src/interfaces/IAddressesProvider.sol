@@ -109,6 +109,12 @@ interface IAddressesProvider {
   function getAccountProxy() external view returns (address);
 
   /**
+   * @notice Returns the address of the CCIP.
+   * @return The CCIP address
+   */
+  function getCcip() external view returns (address);
+
+  /**
    * @param id The key to obtain the address.
    * @return Returns the contract address.
    */

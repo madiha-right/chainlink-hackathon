@@ -25,6 +25,7 @@ contract AddressesProvider is Ownable, IAddressesProvider {
   bytes32 private constant ACL_MANAGER = "ACL_MANAGER";
   bytes32 private constant CONFIGURATOR = "CONFIGURATOR";
   bytes32 private constant ACCOUNT_PROXY = "ACCOUNT_PROXY";
+  bytes32 private constant CCIP = "CCIP";
 
   /* ============ State Variables ============ */
 
@@ -105,6 +106,11 @@ contract AddressesProvider is Ownable, IAddressesProvider {
   /// @dev See {IAddressesProvider-getAccountProxy}.
   function getAccountProxy() external view override returns (address) {
     return getAddress(ACCOUNT_PROXY);
+  }
+
+  /// @dev See {IAddressesProvider-getCCIP}.
+  function getCcip() external view override returns (address) {
+    return getAddress(CCIP);
   }
 
   /* ============ Public Functions ============ */

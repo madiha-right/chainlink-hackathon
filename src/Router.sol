@@ -65,6 +65,11 @@ contract Router is VersionedInitializable, IRouter {
     _;
   }
 
+  modifier onlyCcip() {
+    if (msg.sender != ADDRESSES_PROVIDER.getCcip()) revert Errors.CallerNotCcip();
+    _;
+  }
+
   /* ============ Constructor ============ */
 
   /**
@@ -141,11 +146,20 @@ contract Router is VersionedInitializable, IRouter {
   // solhint-disable-next-line
   receive() external payable { }
 
+  /// @dev See {IRouter-openLoanPosition}.
+  function openLoanPosition(address token, uint256 amount, bytes calldata data) external onlyCcip {
+    (string[] memory targetNames, bytes[] memory datas, address user) = abi.decode(data, (string[], bytes[], address));
+    address account = getOrCreateAccount(user);
+    // send collateral assets to user account
+    IERC20(token).safeTransferFrom(msg.sender, account, amount);
+    IAccount(account).openLoanPosition(targetNames, datas);
+  }
+
   /* ============ Public Functions ============ */
 
   /// @dev See {IRouter-getOrCreateAccount}.
   function getOrCreateAccount(address owner) public override returns (address) {
-    if (owner != msg.sender) revert Errors.CallerNotAccountOwner();
+    if (owner != msg.sender && owner != ADDRESSES_PROVIDER.getCcip()) revert Errors.CallerNotAccountOwner();
     address _account = address(accounts[owner]);
 
     if (_account == address(0)) {

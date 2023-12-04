@@ -9,5 +9,7 @@ library DataTypes {
     uint256 borrowAmount;
     uint256 collateralAmount;
     string delegationTargetName;
+    uint64 destinationChainSelector;
+    address destinationReceiver;
   }
 }

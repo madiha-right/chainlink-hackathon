@@ -10,6 +10,7 @@ library Errors {
   error CallerNotAccountOwner(); // The caller of the function is not a account owner
   error CallerNotReceiver(); // The caller of the function is not a account contract
   error CallerNotPositionOwner(); // The caller of the function is not a position owner
+  error CallerNotCcip(); // The caller of the function is not a ccip contract
   error InvalidAddressProvider(); // The address of the pool addresses provider is invalid
   error ChargeFeeNotCompleted(); // Failed to charge the protocol fee
   error AccountDoesNotExist(); // The sender does not have an account

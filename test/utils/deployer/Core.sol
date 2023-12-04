@@ -11,6 +11,7 @@ import { Configurator } from "contracts/Configurator.sol";
 import { ACLManager } from "contracts/ACLManager.sol";
 import { Connectors } from "contracts/Connectors.sol";
 import { Vaults } from "contracts/Vaults.sol";
+import { Ccip } from "contracts/Ccip.sol";
 import { AddressesProvider } from "contracts/AddressesProvider.sol";
 
 import { Tokens } from "../tokens.sol";
@@ -36,6 +37,8 @@ contract DeployCoreContracts is Tokens {
     ACLManager aclManager = new ACLManager(IAddressesProvider(address(addressesProvider)));
     Connectors connectors = new Connectors(address(addressesProvider));
     Vaults vaults = new Vaults(address(addressesProvider));
+    (address ccipRouter,, address link) = getCcipInfo();
+    Ccip ccip = new Ccip(address(addressesProvider), ccipRouter, link);
 
     vm.startPrank(ACL_ADMIN);
     aclManager.addConnectorAdmin(CONNECTOR_ADMIN);
@@ -47,6 +50,7 @@ contract DeployCoreContracts is Tokens {
     addressesProvider.setAddress(bytes32("ACL_MANAGER"), address(aclManager));
     addressesProvider.setAddress(bytes32("CONNECTORS"), address(connectors));
     addressesProvider.setAddress(bytes32("VAULTS"), address(vaults));
+    addressesProvider.setAddress(bytes32("CCIP"), address(ccip));
 
     Configurator configurator = new Configurator();
 
