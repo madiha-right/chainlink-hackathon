@@ -81,17 +81,16 @@ contract AccountV1 is Initializable, IAccount {
     IERC20(position.collateralAsset).safeTransferFrom(msg.sender, address(this), position.collateralAmount * 2);
 
     // _chargeFee(position.collateralAmount, position.collateralAsset);
-    // and address accout is third parameter that is not used here
     (string[] memory _targetNames, bytes[] memory _datas) = abi.decode(data, (string[], bytes[]));
 
     if (!_compare(position.delegationTargetName, _targetNames[0])) revert Errors.InvalidDelegateTargetName();
 
-    ADDRESSES_PROVIDER.connectorCall(_targetNames[0], abi.encodePacked(_datas[0])); // supply delegated assets
+    ADDRESSES_PROVIDER.connectorCall(_targetNames[0], _datas[0]); // supply delegated assets
 
     if (position.destinationChainSelector != 0) {
       address ccip = ADDRESSES_PROVIDER.getCcip();
       IERC20(position.collateralAsset).safeTransfer(ccip, position.collateralAmount);
-      Ccip(payable(ccip)).openLoanPositionPayNative(
+      Ccip(payable(ccip)).sendMessagePayLink(
         position.destinationChainSelector,
         position.destinationReceiver,
         data,
@@ -99,26 +98,45 @@ contract AccountV1 is Initializable, IAccount {
         position.collateralAmount
       );
     } else {
-      ADDRESSES_PROVIDER.connectorCall(_targetNames[1], abi.encodePacked(_datas[1])); // deposit collateral
-      ADDRESSES_PROVIDER.connectorCall(_targetNames[2], abi.encodePacked(_datas[2])); // borrow debt
+      ADDRESSES_PROVIDER.connectorCall(_targetNames[1], _datas[1]); // deposit collateral
+      ADDRESSES_PROVIDER.connectorCall(_targetNames[2], _datas[2]); // borrow debt
     }
   }
 
   /// @dev See {IAccount-closePosition}.
   function closePosition(bytes32 key, bytes calldata data) external onlyRouter {
-    (address account,, address collateralAsset,, uint256 collateralAmount, string memory delegationTargetName,,) =
-      _getRouter().positions(key);
+    (
+      address account,
+      address debtAsset,
+      address collateralAsset,
+      ,
+      uint256 collateralAmount,
+      string memory delegationTargetName,
+      uint64 destinationChainSelector,
+      address destinationReceiver
+    ) = _getRouter().positions(key);
+
     if (account != _owner) revert Errors.CallerNotPositionOwner();
+    // params = (user, collateralAsset, collateralAmount, repayAmount, PositionType);
+    (string[] memory _targetNames, bytes[] memory _datas, bytes memory params) =
+      abi.decode(data, (string[], bytes[], bytes));
 
-    (string[] memory _targetNames, bytes[] memory _datas) = abi.decode(data, (string[], bytes[]));
+    if (!_compare(delegationTargetName, _targetNames[0])) revert Errors.InvalidDelegateTargetName();
 
-    if (!_compare(delegationTargetName, _targetNames[2])) revert Errors.InvalidDelegateTargetName();
+    ADDRESSES_PROVIDER.connectorCall(_targetNames[0], _datas[0]); // redeem delegated assets
 
-    ADDRESSES_PROVIDER.connectorCall(_targetNames[0], _datas[0]); // repay debt
-    ADDRESSES_PROVIDER.connectorCall(_targetNames[1], _datas[1]); // withdraw collateral with interest and send it to router
-    ADDRESSES_PROVIDER.connectorCall(_targetNames[2], _datas[2]); // redeem delegated assets
-    // only transfer collateral amount to router(interest is not included)
-    IERC20(collateralAsset).safeTransfer(msg.sender, collateralAmount);
+    if (destinationChainSelector != 0) {
+      (,,, uint256 repayAmount,) = abi.decode(params, (address, address, uint256, uint256, IRouter.PositionType));
+
+      address ccip = ADDRESSES_PROVIDER.getCcip();
+      Ccip(payable(ccip)).sendMessagePayLink(
+        destinationChainSelector, destinationReceiver, data, debtAsset, repayAmount
+      );
+    } else {
+      ADDRESSES_PROVIDER.connectorCall(_targetNames[1], _datas[1]); // repay debt
+      ADDRESSES_PROVIDER.connectorCall(_targetNames[2], _datas[2]); // withdraw collateral with interest
+      IERC20(collateralAsset).safeTransfer(msg.sender, collateralAmount); // only transfer collateral amount to router(interest is not included)
+    }
   }
 
   /// @dev See {IAccount-closePosition}.
@@ -132,10 +150,10 @@ contract AccountV1 is Initializable, IAccount {
     emit ClaimedTokens(token, _owner, amount);
   }
 
-  /// @dev See {IAccount-openLoanPosition}.
-  function openLoanPosition(string[] memory targetNames, bytes[] memory datas) external onlyRouter {
-    ADDRESSES_PROVIDER.connectorCall(targetNames[1], abi.encodePacked(datas[1])); // deposit collateral
-    ADDRESSES_PROVIDER.connectorCall(targetNames[2], abi.encodePacked(datas[2])); // borrow debt
+  /// @dev See {IAccount-handleLoan}.
+  function handleLoan(string[] memory targetNames, bytes[] memory datas) external onlyRouter {
+    ADDRESSES_PROVIDER.connectorCall(targetNames[1], datas[1]); // deposit collateral or repay debt
+    ADDRESSES_PROVIDER.connectorCall(targetNames[2], datas[2]); // borrow debt or withdraw collateral
   }
 
   // solhint-disable-next-line

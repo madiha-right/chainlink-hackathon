@@ -58,12 +58,12 @@ interface IAccount {
 
   /**
    * @dev Called by the router which is called by the ccip contract to open a loan position.
-   * - Deposit collateral token to the lending protocol.
-   * - Borrow debt token from the lending protocol.
+   * - Deposit collateral token or Repay debt token to the lending protocol.
+   * - Borrow debt token or Withdraw collateral token from the lending protocol.
    * @param targetNames The connector name that will be called are.
    * @param datas Calldata needed to work with the connector `_datas and _targetNames must be with the same index`.
    */
-  function openLoanPosition(string[] memory targetNames, bytes[] memory datas) external;
+  function handleLoan(string[] memory targetNames, bytes[] memory datas) external;
 
   /**
    * @dev Owner account claim tokens.

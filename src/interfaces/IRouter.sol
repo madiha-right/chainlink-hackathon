@@ -4,6 +4,13 @@ pragma solidity 0.8.20;
 import { DataTypes } from "../lib/DataTypes.sol";
 
 interface IRouter {
+  /* ============ Enums ============ */
+
+  enum PositionType {
+    OPEN,
+    CLOSE
+  }
+
   /* ============ Events ============ */
 
   /**
@@ -88,12 +95,12 @@ interface IRouter {
   function closePosition(bytes32 key, bytes calldata data) external;
 
   /**
-   * @dev Called by the ccip contract to open a loan position.
+   * @dev Called by the ccip contract to open or close a loan position.
    * @param token Address of the token to be deposited.
    * @param amount Amount of the token to be deposited.
    * @param data Calldata to open a loan position.
    */
-  function openLoanPosition(address token, uint256 amount, bytes calldata data) external;
+  function handlePosition(address token, uint256 amount, bytes calldata data) external;
 
   /**
    * @dev Checks if the user has an account otherwise creates and initializes it.

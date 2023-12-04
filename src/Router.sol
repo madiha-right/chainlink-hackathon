@@ -137,7 +137,10 @@ contract Router is VersionedInitializable, IRouter {
     if (account == address(0)) revert Errors.AccountDoesNotExist();
 
     IAccount(account).closePosition(key, data);
-    _depositToVault(position.collateralAsset, position.collateralAmount);
+
+    if (position.destinationChainSelector == 0) {
+      _depositToVault(position.collateralAsset, position.collateralAmount);
+    }
 
     emit ClosePosition(key, account, position);
     delete positions[key];
@@ -146,13 +149,21 @@ contract Router is VersionedInitializable, IRouter {
   // solhint-disable-next-line
   receive() external payable { }
 
-  /// @dev See {IRouter-openLoanPosition}.
-  function openLoanPosition(address token, uint256 amount, bytes calldata data) external onlyCcip {
-    (string[] memory targetNames, bytes[] memory datas, address user) = abi.decode(data, (string[], bytes[], address));
+  /// @dev See {IRouter-handlePosition}.
+  function handlePosition(address token, uint256 amount, bytes calldata data) external onlyCcip {
+    (string[] memory targetNames, bytes[] memory datas, bytes memory params) =
+      abi.decode(data, (string[], bytes[], bytes));
+    (address user, address collateralAsset, uint256 collateralAmount,, PositionType _type) =
+      abi.decode(params, (address, address, uint256, uint256, PositionType));
+
     address account = getOrCreateAccount(user);
-    // send collateral assets to user account
+    // send assets to user account
     IERC20(token).safeTransferFrom(msg.sender, account, amount);
-    IAccount(account).openLoanPosition(targetNames, datas);
+
+    IAccount(account).handleLoan(targetNames, datas);
+    if (_type == PositionType.CLOSE) {
+      _depositToVault(collateralAsset, collateralAmount);
+    }
   }
 
   /* ============ Public Functions ============ */

@@ -180,7 +180,7 @@ contract Ccip is CCIPReceiver, OwnerIsCreator {
   /// @param _token token address.
   /// @param _amount token amount.
   /// @return messageId The ID of the CCIP message that was sent.
-  function openLoanPositionPayLink(
+  function sendMessagePayLink(
     uint64 _destinationChainSelector,
     address _receiver,
     bytes calldata _data,
@@ -229,7 +229,7 @@ contract Ccip is CCIPReceiver, OwnerIsCreator {
   /// @param _token token address.
   /// @param _amount token amount.
   /// @return messageId The ID of the CCIP message that was sent.
-  function openLoanPositionPayNative(
+  function sendMessagePayNative(
     uint64 _destinationChainSelector,
     address _receiver,
     bytes calldata _data,
@@ -383,15 +383,15 @@ contract Ccip is CCIPReceiver, OwnerIsCreator {
       any2EvmMessage.destTokenAmounts[0].amount
     );
 
-    _continueOpenPosition(any2EvmMessage);
+    _handlePosition(any2EvmMessage);
   }
 
-  function _continueOpenPosition(Client.Any2EVMMessage memory any2EvmMessage) internal {
+  function _handlePosition(Client.Any2EVMMessage memory any2EvmMessage) internal {
     bytes memory data = abi.decode(any2EvmMessage.data, (bytes)); // abi-decoding of the sent data
     address router = ADDRESSES_PROVIDER.getRouter();
 
     IERC20(any2EvmMessage.destTokenAmounts[0].token).safeApprove(router, any2EvmMessage.destTokenAmounts[0].amount);
-    IRouter(router).openLoanPosition(
+    IRouter(router).handlePosition(
       any2EvmMessage.destTokenAmounts[0].token, any2EvmMessage.destTokenAmounts[0].amount, data
     );
   }
