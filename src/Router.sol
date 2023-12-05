@@ -136,7 +136,7 @@ contract Router is VersionedInitializable, IRouter {
     address account = accounts[msg.sender];
     if (account == address(0)) revert Errors.AccountDoesNotExist();
 
-    IAccount(account).closePosition(key, data);
+    IAccount(account).closePosition(position, data);
 
     if (position.destinationChainSelector == 0) {
       _depositToVault(position.collateralAsset, position.collateralAmount);

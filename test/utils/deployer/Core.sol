@@ -19,6 +19,7 @@ import { Tokens } from "../tokens.sol";
 contract DeployCoreContracts is Tokens {
   Router public router;
   AccountV1 public accountImpl;
+  AddressesProvider addressesProvider;
 
   address public owner = makeAddr("owner");
 
@@ -30,7 +31,7 @@ contract DeployCoreContracts is Tokens {
 
   function deployContracts(string[] memory _names, address[] memory _connectors, address[] memory _vaults) public {
     vm.startPrank(owner);
-    AddressesProvider addressesProvider = new AddressesProvider(owner);
+    addressesProvider = new AddressesProvider(owner);
     addressesProvider.setAddress(bytes32("ACL_ADMIN"), ACL_ADMIN);
     vm.stopPrank();
 

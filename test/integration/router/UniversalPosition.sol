@@ -24,8 +24,18 @@ contract UniversalPosition is DeployCoreContracts {
     address delegationConnector,
     address lendingConnector
   ) public returns (DataTypes.Position memory, uint256) {
+    (, uint64 destChainSelector,) = getCcipInfo();
+    address ccip = addressesProvider.getCcip();
+
     DataTypes.Position memory position = DataTypes.Position(
-      user, debtAsset, collateralAsset, borrowAmount, collateralAmount, IConnector(delegationConnector).NAME()
+      user,
+      debtAsset,
+      collateralAsset,
+      borrowAmount,
+      collateralAmount,
+      IConnector(delegationConnector).NAME(),
+      destChainSelector,
+      ccip
     );
 
     vm.startPrank(position.account);

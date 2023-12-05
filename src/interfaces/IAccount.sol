@@ -48,13 +48,13 @@ interface IAccount {
    * - Repay debt token to the lending protocol.
    * - Withdraw collateral token.
    * - Swap poisition collateral token to debt token.
-   * @param key The key to obtain the current position.
+   * @param position The structure of the current position.
    * @param data Calldata for the openPositionCallback.
    * 		_targetNames The connector name that will be called are.
    * 		_datas Calldata needed to work with the connector `_datas and _targetNames must be with the same index`.
    * 		_customDatas Additional parameters for future use.
    */
-  function closePosition(bytes32 key, bytes calldata data) external;
+  function closePosition(DataTypes.Position memory position, bytes calldata data) external;
 
   /**
    * @dev Called by the router which is called by the ccip contract to open a loan position.

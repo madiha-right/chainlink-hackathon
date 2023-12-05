@@ -50,13 +50,13 @@ contract Tokens is Test, Script {
     revert("dont have token");
   }
 
-  function getCcipInfo() public view returns (address, uint64, address) {
+  function getCcipInfo() public view returns (address router, uint64 destChainSelector, address link) {
     uint256 chainId = getChainID();
 
     if (chainId == 1) {
-      // CCIP Router address, Chain selector, LINK address
-      return
-        (0xE561d5E02207fb5eB32cca20a699E0d8919a1476, 5009297550715157269, 0x514910771AF9Ca656af840dff83E8264EcF986CA);
+      router = 0xE561d5E02207fb5eB32cca20a699E0d8919a1476; // CCIP Router address
+      destChainSelector = 5009297550715157269; // Destination chain selector
+      link = 0x514910771AF9Ca656af840dff83E8264EcF986CA; // LINK address
     }
   }
 

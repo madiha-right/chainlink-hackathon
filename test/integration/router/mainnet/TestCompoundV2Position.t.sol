@@ -65,7 +65,7 @@ contract PositionCompoundV2Mainnet is UniversalPosition, DeployMainnetContracts 
     override
     returns (bytes[] memory)
   {
-    (,,, uint256 borrowAmount, uint256 collateralAmount,) = router.positions(positionKey);
+    (,,, uint256 borrowAmount, uint256 collateralAmount,,,) = router.positions(positionKey);
 
     bytes[] memory datas = new bytes[](3);
     datas[0] = _getPaybackCallData(position.debtAsset, borrowAmount);

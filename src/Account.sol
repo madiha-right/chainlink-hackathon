@@ -104,38 +104,27 @@ contract AccountV1 is Initializable, IAccount {
   }
 
   /// @dev See {IAccount-closePosition}.
-  function closePosition(bytes32 key, bytes calldata data) external onlyRouter {
-    (
-      address account,
-      address debtAsset,
-      address collateralAsset,
-      ,
-      uint256 collateralAmount,
-      string memory delegationTargetName,
-      uint64 destinationChainSelector,
-      address destinationReceiver
-    ) = _getRouter().positions(key);
+  function closePosition(DataTypes.Position memory position, bytes calldata data) external onlyRouter {
+    if (position.account != _owner) revert Errors.CallerNotPositionOwner();
 
-    if (account != _owner) revert Errors.CallerNotPositionOwner();
-    // params = (user, collateralAsset, collateralAmount, repayAmount, PositionType);
     (string[] memory _targetNames, bytes[] memory _datas, bytes memory params) =
-      abi.decode(data, (string[], bytes[], bytes));
+      abi.decode(data, (string[], bytes[], bytes)); // params = (user, collateralAsset, collateralAmount, repayAmount, PositionType);
 
-    if (!_compare(delegationTargetName, _targetNames[0])) revert Errors.InvalidDelegateTargetName();
+    if (!_compare(position.delegationTargetName, _targetNames[0])) revert Errors.InvalidDelegateTargetName();
 
     ADDRESSES_PROVIDER.connectorCall(_targetNames[0], _datas[0]); // redeem delegated assets
 
-    if (destinationChainSelector != 0) {
+    if (position.destinationChainSelector != 0) {
       (,,, uint256 repayAmount,) = abi.decode(params, (address, address, uint256, uint256, IRouter.PositionType));
 
       address ccip = ADDRESSES_PROVIDER.getCcip();
       Ccip(payable(ccip)).sendMessagePayLink(
-        destinationChainSelector, destinationReceiver, data, debtAsset, repayAmount
+        position.destinationChainSelector, position.destinationReceiver, data, position.debtAsset, repayAmount
       );
     } else {
       ADDRESSES_PROVIDER.connectorCall(_targetNames[1], _datas[1]); // repay debt
       ADDRESSES_PROVIDER.connectorCall(_targetNames[2], _datas[2]); // withdraw collateral with interest
-      IERC20(collateralAsset).safeTransfer(msg.sender, collateralAmount); // only transfer collateral amount to router(interest is not included)
+      IERC20(position.collateralAsset).safeTransfer(msg.sender, position.collateralAmount); // only transfer collateral amount to router(interest is not included)
     }
   }
 
