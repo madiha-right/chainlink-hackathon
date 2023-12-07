@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.20;
 
+import { Test } from "forge-std/Test.sol";
+
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import { IAddressesProvider } from "contracts/interfaces/IAddressesProvider.sol";
@@ -14,7 +16,7 @@ import { ACLManager } from "contracts/ACLManager.sol";
 import { Configurator } from "contracts/Configurator.sol";
 import { AddressesProvider } from "contracts/AddressesProvider.sol";
 
-import { Tokens } from "../../../utils/tokens.sol";
+import { Tokens } from "utils/Tokens.sol";
 
 contract RouterV2 is Router {
   uint256 public constant ROUTER_REVISION_2 = 0x2;
@@ -26,7 +28,7 @@ contract RouterV2 is Router {
   }
 }
 
-contract TestRouter is Tokens {
+contract TestRouter is Tokens, Test {
   Router router;
   Connectors connectors;
   Vaults vaults;

@@ -10,9 +10,9 @@ import { IPool } from "contracts/interfaces/external/aave-v3/IPool.sol";
 import { IPoolDataProvider } from "contracts/interfaces/external/aave-v3/IPoolDataProvider.sol";
 import { IPoolAddressesProvider } from "contracts/interfaces/external/aave-v3/IPoolAddressesProvider.sol";
 
-import { Tokens } from "../../utils/tokens.sol";
+import { Tokens } from "utils/Tokens.sol";
 
-contract LendingHelper is Tokens {
+contract LendingHelper is Tokens, Test {
   uint256 RATE_TYPE = 2;
   string NAME = "AaveV3";
 

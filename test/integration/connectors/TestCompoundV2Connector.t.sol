@@ -10,13 +10,13 @@ import { CompoundV2Connector } from "contracts/connectors/mainnet/CompoundV2Conn
 import { CTokenInterface } from "contracts/interfaces/external/compound-v2/CTokenInterfaces.sol";
 import { ComptrollerInterface } from "contracts/interfaces/external/compound-v2/ComptrollerInterface.sol";
 
-import { Tokens } from "../../utils/tokens.sol";
+import { Tokens } from "utils/Tokens.sol";
 
 interface AaveOracle {
   function getAssetPrice(address asset) external view returns (uint256);
 }
 
-contract LendingHelper is Tokens {
+contract LendingHelper is Tokens, Test {
   CompoundV2Connector compoundV2Connector;
 
   ComptrollerInterface internal constant troller = ComptrollerInterface(0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B);

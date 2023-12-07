@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.20;
 
-import { DeployCoreContracts } from "../core.sol";
+import { DeployCoreContracts } from "../Core.sol";
 import { DeployMainnetConnectors } from "./MainnetConnectors.sol";
 import { DeployMainnetVaults } from "./MainnetVaults.sol";
 

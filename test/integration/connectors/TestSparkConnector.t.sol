@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.20;
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
@@ -11,9 +11,9 @@ import { IPool } from "contracts/interfaces/external/aave-v3/IPool.sol";
 import { IPoolDataProvider } from "contracts/interfaces/external/aave-v3/IPoolDataProvider.sol";
 import { IPoolAddressesProvider } from "contracts/interfaces/external/aave-v3/IPoolAddressesProvider.sol";
 
-import { Tokens } from "../../utils/tokens.sol";
+import { Tokens } from "utils/Tokens.sol";
 
-contract LendingHelper is Tokens {
+contract LendingHelper is Tokens, Test {
   uint256 RATE_TYPE = 2;
   string NAME = "AaveV3";
 
@@ -53,7 +53,7 @@ contract LendingHelper is Tokens {
   }
 }
 
-contract TestAaveV3Connector is LendingHelper {
+contract TestSparkConnector is LendingHelper {
   uint256 public SECONDS_OF_THE_YEAR = 365 days;
   uint256 public RAY = 1e27;
 

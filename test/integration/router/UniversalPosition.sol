@@ -10,7 +10,7 @@ import { PercentageMath } from "contracts/lib/PercentageMath.sol";
 import { IRouter } from "contracts/interfaces/IRouter.sol";
 import { IConnector } from "contracts/interfaces/IConnector.sol";
 
-import { DeployCoreContracts } from "../../utils/deployer/core.sol";
+import { DeployCoreContracts } from "../../utils/deployer/Core.sol";
 
 contract UniversalPosition is DeployCoreContracts {
   using SafeERC20 for IERC20;
@@ -77,7 +77,7 @@ contract UniversalPosition is DeployCoreContracts {
     address lendingConnector,
     DataTypes.Position memory position
   ) internal view returns (bytes memory) {
-    string[] memory targetNames = _getOpenConnectorNames(delegationConnector, lendingConnector);
+    string[] memory targetNames = _getConnectorNames(delegationConnector, lendingConnector);
     bytes[] memory datas = _getOpenConnectorDatas(position);
 
     return abi.encode(targetNames, datas);
@@ -89,13 +89,13 @@ contract UniversalPosition is DeployCoreContracts {
     address lendingConnector,
     DataTypes.Position memory position
   ) internal view returns (bytes memory) {
-    string[] memory targetNames = _getCloseConnectorNames(delegationConnector, lendingConnector);
+    string[] memory targetNames = _getConnectorNames(delegationConnector, lendingConnector);
     bytes[] memory datas = _getCloseConnectorDatas(position, key);
 
     return abi.encode(targetNames, datas);
   }
 
-  function _getOpenConnectorNames(address delegationConnector, address lendingConnector)
+  function _getConnectorNames(address delegationConnector, address lendingConnector)
     internal
     view
     returns (string[] memory names)
@@ -104,17 +104,6 @@ contract UniversalPosition is DeployCoreContracts {
     names[0] = IConnector(delegationConnector).NAME();
     names[1] = IConnector(lendingConnector).NAME();
     names[2] = IConnector(lendingConnector).NAME();
-  }
-
-  function _getCloseConnectorNames(address delegationConnector, address lendingConnector)
-    internal
-    view
-    returns (string[] memory names)
-  {
-    names = new string[](3);
-    names[0] = IConnector(lendingConnector).NAME();
-    names[1] = IConnector(lendingConnector).NAME();
-    names[2] = IConnector(delegationConnector).NAME();
   }
 
   function _getOpenConnectorDatas(DataTypes.Position memory position) internal view virtual returns (bytes[] memory) { }
