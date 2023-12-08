@@ -23,7 +23,7 @@ quote_style = "double"
 number_underscore = "preserve"
 
 [rpc_endpoints]
-mainnet = "${ANVIL_RPC_URL}"
+mainnet = "${ALCHEMY_MAINNET_RPC_URL}"
 sepolia = "${ALCHEMY_SEPOLIA_RPC_URL}"
 polygonZkevmTestnet = "${POLYGON_ZKEVM_TESTNET_RPC_URL}"
 fuji = "${FUJI_RPC_URL}"
