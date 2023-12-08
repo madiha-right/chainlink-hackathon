@@ -18,8 +18,9 @@ import { Ccip } from "contracts/Ccip.sol";
 import { AddressesProvider } from "contracts/AddressesProvider.sol";
 
 import { Tokens } from "utils/Tokens.sol";
+import { Constants } from "./utils/Constants.sol";
 
-contract DeployCore is Tokens, Script {
+contract DeployCore is Constants, Tokens, Script {
   AddressesProvider addressesProvider;
   Configurator configurator;
 
@@ -80,22 +81,22 @@ contract DeployCore is Tokens, Script {
 
   function _setConfigs() private {
     string[] memory _names = new string[](5);
-    _names[0] = "sDAI";
-    _names[1] = "AaveV2";
-    _names[2] = "AaveV3";
-    _names[3] = "CompoundV2";
-    _names[4] = "Spark";
+    _names[0] = SDAI_CONNECTOR.NAME();
+    _names[1] = AAVE_V2_CONNECTOR.NAME();
+    _names[2] = AAVE_V3_CONNECTOR.NAME();
+    _names[3] = COMPOUND_V2_CONNECTOR.NAME();
+    _names[4] = SPARK_CONNECTOR.NAME();
 
     address[] memory _connectors = new address[](5);
-    _connectors[0] = 0xA8452Ec99ce0C64f20701dB7dD3abDb607c00496; // sDAI connector
-    _connectors[1] = 0xBb2180ebd78ce97360503434eD37fcf4a1Df61c3; // aave v2 connector
-    _connectors[2] = 0xDB8cFf278adCCF9E9b5da745B44E754fC4EE3C76; // aave v3 connector
-    _connectors[3] = 0x50EEf481cae4250d252Ae577A09bF514f224C6C4; // compound v2 connector
-    _connectors[4] = 0x62c20Aa1e0272312BC100b4e23B4DC1Ed96dD7D1; // spark connector
+    _connectors[0] = address(SDAI_CONNECTOR); // sDAI connector
+    _connectors[1] = address(AAVE_V2_CONNECTOR); // aave v2 connector
+    _connectors[2] = address(AAVE_V3_CONNECTOR); // aave v3 connector
+    _connectors[3] = address(COMPOUND_V2_CONNECTOR); // compound v2 connector
+    _connectors[4] = address(SPARK_CONNECTOR); // spark connector
 
     address[] memory _vaults = new address[](2);
-    _vaults[0] = 0xad216Ca69843e97062E18bDa77b5CE06626c3285; // weth vault
-    _vaults[1] = 0xcC2E06680A4E8f6B71030c684852A53D5200CD7C; // dai vault
+    _vaults[0] = WETH_VAULT; // weth vault
+    _vaults[1] = DAI_VAULT; // dai vault
 
     configurator.addConnectors(_names, _connectors);
     configurator.addVaults(_vaults);

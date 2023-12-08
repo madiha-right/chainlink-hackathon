@@ -15,6 +15,11 @@ import { DeployCoreContracts } from "../../utils/deployer/Core.sol";
 contract UniversalPosition is DeployCoreContracts {
   using SafeERC20 for IERC20;
 
+  enum PositionType {
+    OPEN,
+    CLOSE
+  }
+
   function openPosition(
     address user,
     address debtAsset,
@@ -24,8 +29,8 @@ contract UniversalPosition is DeployCoreContracts {
     address delegationConnector,
     address lendingConnector
   ) public returns (DataTypes.Position memory, uint256) {
-    (, uint64 destChainSelector,) = getCcipInfo();
-    address ccip = addressesProvider.getCcip();
+    // (, uint64 destChainSelector,) = getCcipInfo();
+    // address ccip = addressesProvider.getCcip();
 
     DataTypes.Position memory position = DataTypes.Position(
       user,
@@ -34,9 +39,11 @@ contract UniversalPosition is DeployCoreContracts {
       borrowAmount,
       collateralAmount,
       IConnector(delegationConnector).NAME(),
-      destChainSelector,
-      ccip
+      0,
+      address(0)
     );
+    // destChainSelector,
+    // ccip
 
     vm.startPrank(position.account);
     deal(position.debtAsset, address(this), 10000); // add padding to avoid rounding errors on repay
@@ -91,8 +98,11 @@ contract UniversalPosition is DeployCoreContracts {
   ) internal view returns (bytes memory) {
     string[] memory targetNames = _getConnectorNames(delegationConnector, lendingConnector);
     bytes[] memory datas = _getCloseConnectorDatas(position, key);
+    bytes memory params = abi.encode(
+      position.account, position.collateralAsset, position.collateralAmount, position.borrowAmount, PositionType.CLOSE
+    );
 
-    return abi.encode(targetNames, datas);
+    return abi.encode(targetNames, datas, params);
   }
 
   function _getConnectorNames(address delegationConnector, address lendingConnector)

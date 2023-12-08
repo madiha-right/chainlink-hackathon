@@ -9,7 +9,7 @@ import { ISDAIConnector } from "../../interfaces/connectors/ISDAIConnector.sol";
 
 import { Errors } from "../../lib/Errors.sol";
 
-contract SDAIConnector {
+contract SDAIConnector is ISDAIConnector {
   using SafeERC20 for IERC20;
 
   /* ============ Constants ============ */

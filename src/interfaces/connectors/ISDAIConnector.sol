@@ -12,9 +12,12 @@ interface ISDAIConnector {
   function deposit(uint256 amount) external;
 
   /**
-   * @dev Withdraw DAI.
-   * @notice Withdraw deposited DAI from sDAI vault.
-   * @param amount The amount of the sDAI shares to withdraw DAI. (For max: `type(uint).max`)
+   * @dev Redeem DAI.
+   * @notice Redeem deposited DAI from sDAI vault.
    */
-  function redeem(address shares, uint256 amount) external;
+  function redeem(uint256 shares) external;
+
+  function getDepositBalance(address account) external view returns (uint256);
+
+  function getShares(address account) external view returns (uint256);
 }

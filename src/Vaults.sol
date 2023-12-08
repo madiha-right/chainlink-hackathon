@@ -54,7 +54,7 @@ contract Vaults is IVaults {
 
       if (vault == address(0)) revert Errors.InvalidVaultAddress();
 
-      address asset = i == 0 ? 0xf97b6C636167B529B6f1D729Bd9bC0e2Bd491848 : 0x676bD5B5d0955925aeCe653C50426940c58036c8;
+      address asset = IERC4626(vault).asset();
 
       if (vaults[asset] != address(0)) revert Errors.VaultAlreadyExist();
 
@@ -63,22 +63,6 @@ contract Vaults is IVaults {
       emit VaultAdded(asset, vault);
     }
   }
-  // /// @dev See {IVaults-addVaults}.
-  // function addVaults(address[] calldata _vaults) external onlyConfigurator {
-  //   for (uint256 i = 0; i < _vaults.length; i++) {
-  //     address vault = _vaults[i];
-
-  //     if (vault == address(0)) revert Errors.InvalidVaultAddress();
-
-  //     address asset = IERC4626(vault).asset();
-
-  //     if (vaults[asset] != address(0)) revert Errors.VaultAlreadyExist();
-
-  //     vaults[asset] = vault;
-
-  //     emit VaultAdded(asset, vault);
-  //   }
-  // }
 
   /// @dev See {IVaults-removeVaults}.
   function removeVaults(address[] calldata assets) external onlyConfigurator {

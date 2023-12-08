@@ -53,9 +53,9 @@ contract PositionAaveV3Mainnet is UniversalPosition, DeployMainnetContracts {
     (,,, uint256 borrowAmount, uint256 collateralAmount,,,) = router.positions(positionKey);
 
     bytes[] memory datas = new bytes[](3);
-    datas[0] = _getPaybackCallData(position.debtAsset, borrowAmount);
-    datas[1] = _getWithdrawCallData(position.collateralAsset, collateralAmount);
-    datas[2] = _getRedeemCallData(position.account);
+    datas[0] = _getRedeemCallData(position.account);
+    datas[1] = _getPaybackCallData(position.debtAsset, borrowAmount);
+    datas[2] = _getWithdrawCallData(position.collateralAsset, collateralAmount);
     return datas;
   }
 
